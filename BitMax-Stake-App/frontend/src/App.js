@@ -1,86 +1,301 @@
-import { useEffect, useState, useCallback } from 'react';
-import { ethers } from 'ethers';
-import StakingToken from './contracts/StakingToken.json';
-import StakingDapp from './contracts/StakingDapp.json';
-import RewardToken from './contracts/RewardToken.json';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import Modal from './components/Modal';
-import './App.css';
-import PTRedemption from './components/PTRedemption';
-import SYWrapping from './components/SYWrapping';
-import TokenSplitting from './components/TokenSplitting';
-import TokenTrading from './components/TokenTrading';
-import coreLogo from './core-logo.png';
+import { useEffect, useState, useCallback } from "react";
+import { ethers } from "ethers";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import Modal from "./components/Modal";
+import "./App.css";
 
-const stakingDappAddress = '0x9f97cb70D2be4eb57a7aC3775B76d22C7F8AE622';
-const stakingTokenAddress = '0x8400Cdc0E4B52225fd6172404eE41D0de732fa9D';
-const rewardTokenAddress = '0xBf4015d32E564154b288a2EfA127162a1552b241';
+// Import for recharts
+import {
+  LineChart,
+  Line,
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+
+// Import lucide-react icons instead of react-icons
+import {
+  Activity,
+  BarChart2,
+  Layers,
+  DollarSign,
+  PieChart,
+  ArrowUp,
+  ArrowDown,
+  RefreshCw,
+  Plus,
+  Check,
+  Clock,
+  Info,
+  Shield,
+  Zap,
+  Star,
+  TrendingUp,
+  Search,
+  Bitcoin,
+  Hexagon,
+} from "lucide-react";
+
+// Import contract ABIs
+import StakingToken from "./contracts/StakingToken.json";
+import StakingDapp from "./contracts/StakingDapp.json";
+import RewardToken from "./contracts/RewardToken.json";
+import MockLiquidStakedBTC from "./contracts/MockLiquidStakedBTC.json";
+import SYlstBTC from "./contracts/SYlstBTC.json";
+import YieldTokenizationBTC from "./contracts/YieldTokenizationBTC.json";
+import PTTokenBTC from "./contracts/PTTokenBTC.json";
+import YTTokenBTC from "./contracts/YTTokenBTC.json";
+import MockDualCORE from "./contracts/MockDualCORE.json";
+
+import { CONTRACT_ADDRESSES } from "./utils/contracts";
+import PTRedemption from "./components/PTRedemption";
+import SYWrapping from "./components/SYWrapping";
+import TokenSplitting from "./components/TokenSplitting";
+import TokenTrading from "./components/TokenTrading";
+import LstBTCFlow from "./components/LstBTCFlow";
+import DualCoreFlow from "./components/DualCoreFlow";
+import StCOREFlow from "./components/StCOREFlow";
+import CryptoPriceChart from "./components/ModernSalesChart.js";
+
+const mockLiquidStakedBTCAddress = CONTRACT_ADDRESSES.mockLiquidStakedBTC;
+const sylstBTCAddress = CONTRACT_ADDRESSES.sylstBTC;
+const yieldTokenizationBTCAddress = CONTRACT_ADDRESSES.yieldTokenizationBTC;
+const mockDualCOREAddress = CONTRACT_ADDRESSES.mockDualCORE;
+
+const stakingDappAddress = CONTRACT_ADDRESSES.stakingDapp;
+const stakingTokenAddress = CONTRACT_ADDRESSES.stakingToken;
+const rewardTokenAddress = CONTRACT_ADDRESSES.rewardToken;
+
+// Sample data for charts
+const generateStakingHistoryData = () => {
+  const data = [];
+  const now = new Date();
+
+  for (let i = 30; i >= 0; i--) {
+    const date = new Date(now);
+    date.setDate(date.getDate() - i);
+
+    data.push({
+      date: date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      }),
+      staked: 100 + Math.random() * 50 + i * 3,
+      rewards: 10 + Math.random() * 5 + i * 0.5,
+    });
+  }
+
+  return data;
+};
+
+
+
+const generateTokenPerformanceData = () => {
+  const data = [];
+  const now = new Date();
+
+  for (let i = 30; i >= 0; i--) {
+    const date = new Date(now);
+    date.setDate(date.getDate() - i);
+
+    data.push({
+      date: date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      }),
+      stCORE: 100 + Math.sin(i / 5) * 15 + i * 0.5,
+      lstBTC: 100 + Math.cos(i / 5) * 10 + i * 0.7,
+      dualCORE: 100 + Math.sin(i / 3) * 8 + i * 0.6,
+    });
+  }
+
+  return data;
+};
+
+const ordersData = [
+  {
+    id: "0x71b4...7634",
+    action: "Long Yield",
+    apy: "11.87%",
+    value: "$5,892.82",
+    notionalSize: "5,922.86 PT",
+    time: "3h 12m"
+  },
+  {
+    id: "0xf88a...5de3",
+    action: "Long Yield",
+    apy: "11.87%",
+    value: "$25,117.02",
+    notionalSize: "25,245.1 PT",
+    time: "3h 19m"
+  },
+  {
+    id: "0x9fee...8a9c",
+    action: "Long Yield",
+    apy: "11.86%",
+    value: "$6,353.77",
+    notionalSize: "6,386.2 PT",
+    time: "4h 7m"
+  },
+  {
+    id: "0x34a7...4a09",
+    action: "Long Yield",
+    apy: "11.86%",
+    value: "$11,973.27",
+    notionalSize: "12,034.4 PT",
+    time: "4h 21m"
+  },
+  {
+    id: "0xd3a7...8c9a",
+    action: "Long Yield",
+    apy: "11.86%",
+    value: "$366,163",
+    notionalSize: "368,033 PT",
+    time: "4h 23m"
+  },
+  {
+    id: "0xc474...8760",
+    action: "Long Yield",
+    apy: "11.81%",
+    value: "$992.69",
+    notionalSize: "997.763 PT",
+    time: "5h 57m"
+  },
+  {
+    id: "0x71b4...7634",
+    action: "Long Yield",
+    apy: "11.81%",
+    value: "$47,239.69",
+    notionalSize: "47,481.4 PT",
+    time: "6h 37m"
+  },
+  {
+    id: "0x67b8...6256",
+    action: "Long Yield",
+    apy: "11.8%",
+    value: "$89,541.15",
+    notionalSize: "90,000 PT",
+    time: "7h 35m"
+  }
+];
+const apyHistoryData = generateStakingHistoryData();
+const tokenPerformanceData = generateTokenPerformanceData();
 
 function App() {
-  const [stakingAmount, setStakingAmount] = useState('');
-  const [unstakingAmount, setUnstakingAmount] = useState('');
-  const [activeTab, setActiveTab] = useState('staking');
+  const [stakingAmount, setStakingAmount] = useState("");
+  const [unstakingAmount, setUnstakingAmount] = useState("");
+  // Add a state to track whether we're viewing the dashboard or a flow
+  const [activeTab, setActiveTab] = useState("dashboard");
+
   const [currentAccount, setCurrentAccount] = useState(null);
-  const [stakedAmount, setStakedAmount] = useState('0');
-  const [rewardAmount, setRewardAmount] = useState('0');
-  const [totalStkBalance, setTotalStkBalance] = useState('0');
-  const [network, setNetwork] = useState('');
-  const [faucetAmount, setFaucetAmount] = useState('');
+  const [stakedAmount, setStakedAmount] = useState("0");
+  const [rewardAmount, setRewardAmount] = useState("0");
+  const [totalStkBalance, setTotalStkBalance] = useState("0");
+  const [network, setNetwork] = useState("");
+  const [faucetAmount, setFaucetAmount] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [stakingTokenDecimals, setStakingTokenDecimals] = useState(18);
   const [rewardTokenDecimals, setRewardTokenDecimals] = useState(18);
   const [isApproved, setIsApproved] = useState(false);
+  const [lstBTCBalance, setLstBTCBalance] = useState("0");
+  const [sylstBTCBalance, setSylstBTCBalance] = useState("0");
+  const [dualCOREBalance, setDualCOREBalance] = useState("0");
+  const [lstBTCDecimals, setLstBTCDecimals] = useState(18);
+  const [dualCOREDecimals, setDualCOREDecimals] = useState(18);
+
+  // Dashboard state
+  const [activeChartPeriod, setActiveChartPeriod] = useState("1M");
+  const [chartType, setChartType] = useState("revenue");
+  const [activeDashboardTab, setActiveDashboardTab] = useState("value");
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Add a new function to fetch dualCORE balance
+  const fetchDualCOREBalance = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const { ethereum } = window;
+
+      if (ethereum && currentAccount) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const dualCOREContract = new ethers.Contract(
+          mockDualCOREAddress,
+          MockDualCORE.abi,
+          provider
+        );
+
+        const balance = await dualCOREContract.balanceOf(currentAccount);
+        const decimals = await dualCOREContract.decimals();
+        setDualCOREDecimals(decimals);
+        setDualCOREBalance(ethers.utils.formatUnits(balance, decimals));
+      }
+    } catch (error) {
+      console.error("Error fetching dualCORE balance:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentAccount]);
+
+  const fetchLstBTCBalance = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const { ethereum } = window;
+
+      if (ethereum && currentAccount) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const lstBTCContract = new ethers.Contract(
+          mockLiquidStakedBTCAddress,
+          MockLiquidStakedBTC.abi,
+          provider
+        );
+
+        const balance = await lstBTCContract.balanceOf(currentAccount);
+        const decimals = await lstBTCContract.decimals();
+        setLstBTCDecimals(decimals);
+        setLstBTCBalance(ethers.utils.formatUnits(balance, decimals));
+      }
+    } catch (error) {
+      console.error("Error fetching lstBTC balance:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentAccount]);
 
   // Check if wallet is connected
   const checkWalletIsConnected = async () => {
     const { ethereum } = window;
 
     if (!ethereum) {
-      console.log('Make sure you have Metamask installed!');
+      console.log("Make sure you have Metamask installed!");
       return;
     }
 
     try {
-      const accounts = await ethereum.request({ method: 'eth_accounts' });
+      const accounts = await ethereum.request({ method: "eth_accounts" });
 
       if (accounts.length !== 0) {
         const account = accounts[0];
         setCurrentAccount(account);
       } else {
-        console.log('No authorized account found');
+        console.log("No authorized account found");
       }
     } catch (error) {
-      console.error('Error fetching accounts:', error);
+      console.error("Error fetching accounts:", error);
     }
   };
 
-  const checkContractExists = async () => {
-    try {
-      const { ethereum } = window;
-      if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const code = await provider.getCode(stakingDappAddress);
-        
-        if (code === '0x') {
-          toast.error("No contract exists at this address!");
-        } else {
-          toast.success("Contract exists at address!");
-          console.log("Contract bytecode:", code);
-        }
-      }
-    } catch (error) {
-      console.error("Error checking contract:", error);
-      toast.error("Failed to check contract");
-    }
-  };
-
-  // Check network
   const checkNetwork = async () => {
     const { ethereum } = window;
 
     if (!ethereum) {
-      console.log('Ethereum object does not exist');
+      console.log("Ethereum object does not exist");
       return;
     }
 
@@ -89,12 +304,12 @@ function App() {
       const { chainId } = await provider.getNetwork();
 
       if (chainId !== 1114) {
-        alert('Please connect to the Core Testnet2');
+        toast.warning("Please connect to the Core Testnet2");
       } else {
-        setNetwork('Core Testnet2');
+        setNetwork("Core Testnet2");
       }
     } catch (error) {
-      console.error('Error fetching network:', error);
+      console.error("Error fetching network:", error);
     }
   };
 
@@ -103,538 +318,197 @@ function App() {
     const { ethereum } = window;
 
     if (!ethereum) {
-      alert('Please install Metamask!');
+      toast.error("Please install Metamask!");
       return;
     }
 
     try {
-      const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+      const accounts = await ethereum.request({
+        method: "eth_requestAccounts",
+      });
       setCurrentAccount(accounts[0]);
+      toast.success("Wallet connected successfully");
     } catch (error) {
-      console.error('Error connecting wallet:', error);
+      console.error("Error connecting wallet:", error);
+      toast.error("Failed to connect wallet");
     }
   };
 
   // Disconnect wallet
   const disconnectWalletHandler = () => {
     setCurrentAccount(null);
-    setStakedAmount('0');
-    setRewardAmount('0');
-    setTotalStkBalance('0');
-    setNetwork('');
+    setStakedAmount("0");
+    setRewardAmount("0");
+    setTotalStkBalance("0");
+    setNetwork("");
+    toast.info("Wallet disconnected");
   };
 
   // Fetch staked and reward amounts
   const fetchStakedAndRewardAmounts = useCallback(async () => {
     try {
+      setIsLoading(true);
       const { ethereum } = window;
 
       if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
-        const stakingDappContract = new ethers.Contract(stakingDappAddress, StakingDapp.abi, signer);
+        const stakingDappContract = new ethers.Contract(
+          stakingDappAddress,
+          StakingDapp.abi,
+          signer
+        );
 
-        const stakedAmount = await stakingDappContract.getStakedAmount(currentAccount);
-        const rewardAmount = await stakingDappContract.getRewardAmount(currentAccount);
+        const stakedAmount = await stakingDappContract.getStakedAmount(
+          currentAccount
+        );
+        const rewardAmount = await stakingDappContract.getRewardAmount(
+          currentAccount
+        );
 
-        setStakedAmount(ethers.utils.formatUnits(stakedAmount, stakingTokenDecimals));
-        setRewardAmount(ethers.utils.formatUnits(rewardAmount, rewardTokenDecimals));
+        setStakedAmount(
+          ethers.utils.formatUnits(stakedAmount, stakingTokenDecimals)
+        );
+        setRewardAmount(
+          ethers.utils.formatUnits(rewardAmount, rewardTokenDecimals)
+        );
       } else {
-        console.log('Ethereum object does not exist');
+        console.log("Ethereum object does not exist");
       }
     } catch (error) {
-      console.error('Error fetching staked and reward amounts:', error);
+      console.error("Error fetching staked and reward amounts:", error);
+    } finally {
+      setIsLoading(false);
     }
   }, [currentAccount, stakingTokenDecimals, rewardTokenDecimals]);
 
   // Fetch staking token balance
   const fetchStkBalance = useCallback(async () => {
     try {
+      setIsLoading(true);
       const { ethereum } = window;
 
       if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum);
-        const stakingTokenContract = new ethers.Contract(stakingTokenAddress, StakingToken.abi, provider);
+        const stakingTokenContract = new ethers.Contract(
+          stakingTokenAddress,
+          StakingToken.abi,
+          provider
+        );
 
         const balance = await stakingTokenContract.balanceOf(currentAccount);
         const decimals = await stakingTokenContract.decimals();
         setStakingTokenDecimals(decimals);
         setTotalStkBalance(ethers.utils.formatUnits(balance, decimals));
       } else {
-        console.log('Ethereum object does not exist');
+        console.log("Ethereum object does not exist");
       }
     } catch (error) {
-      console.error('Error fetching token balance:', error);
+      console.error("Error fetching token balance:", error);
+    } finally {
+      setIsLoading(false);
     }
   }, [currentAccount]);
 
-  // Fetch reward token decimals
-  const fetchRewardTokenDecimals = useCallback(async () => {
-    try {
-      const { ethereum } = window;
-
-      if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const rewardTokenContract = new ethers.Contract(rewardTokenAddress, RewardToken.abi, provider);
-
-        const decimals = await rewardTokenContract.decimals();
-        setRewardTokenDecimals(decimals);
-      } else {
-        console.log('Ethereum object does not exist');
-      }
-    } catch (error) {
-      console.error('Error fetching reward token decimals:', error);
-    }
-  }, []);
-
-  // Check allowance
-  const checkAllowance = async () => {
-    try {
-      const { ethereum } = window;
-      if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const tokenContract = new ethers.Contract(stakingTokenAddress, StakingToken.abi, provider);
-        
-        const amountToStake = stakingAmount ? ethers.utils.parseUnits(stakingAmount, stakingTokenDecimals) : ethers.utils.parseUnits("1", stakingTokenDecimals);
-        const allowance = await tokenContract.allowance(currentAccount, stakingDappAddress);
-        console.log("Current allowance:", ethers.utils.formatUnits(allowance, stakingTokenDecimals));
-        
-        if (allowance.gte(amountToStake)) {
-          setIsApproved(true);
-          toast.info(`Current allowance: ${ethers.utils.formatUnits(allowance, stakingTokenDecimals)} STK (Sufficient)`);
-        } else {
-          setIsApproved(false);
-          toast.warning(`Current allowance: ${ethers.utils.formatUnits(allowance, stakingTokenDecimals)} STK (Insufficient for ${stakingAmount || "1"} STK)`);
-        }
-        return allowance;
-      }
-    } catch (error) {
-      console.error("Error checking allowance:", error);
-      toast.error("Failed to check allowance");
-      return ethers.BigNumber.from(0);
-    }
-  };
-
-  // Check balances
-  const checkBalances = async () => {
-    try {
-      const { ethereum } = window;
-      if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const tokenContract = new ethers.Contract(stakingTokenAddress, StakingToken.abi, provider);
-        
-        const balance = await tokenContract.balanceOf(currentAccount);
-        console.log("STK Balance:", ethers.utils.formatUnits(balance, stakingTokenDecimals));
-        
-        toast.info(`Your STK Balance: ${ethers.utils.formatUnits(balance, stakingTokenDecimals)} STK`);
-        
-        // Also check tCORE2 balance for gas
-        const coreBalance = await provider.getBalance(currentAccount);
-        console.log("tCORE2 Balance:", ethers.utils.formatEther(coreBalance));
-        
-        toast.info(`Your tCORE2 Balance: ${ethers.utils.formatEther(coreBalance)} tCORE2`);
-      }
-    } catch (error) {
-      console.error("Error checking balances:", error);
-      toast.error("Failed to check balances");
-    }
-  };
-
-  // Verify contract tokens
-  const verifyContractTokens = async () => {
-    try {
-      const { ethereum } = window;
-      if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const stakingDappContract = new ethers.Contract(stakingDappAddress, StakingDapp.abi, provider);
-        
-        const contractStakingToken = await stakingDappContract.stakingToken();
-        console.log("Contract's Staking Token:", contractStakingToken);
-        
-        if (contractStakingToken.toLowerCase() === stakingTokenAddress.toLowerCase()) {
-          toast.success("Staking token address matches!");
-        } else {
-          toast.error("Staking token address mismatch!");
-          console.log("Expected:", stakingTokenAddress);
-          console.log("Actual:", contractStakingToken);
-        }
-        
-        const contractRewardToken = await stakingDappContract.rewardToken();
-        console.log("Contract's Reward Token:", contractRewardToken);
-        
-        if (contractRewardToken.toLowerCase() === rewardTokenAddress.toLowerCase()) {
-          toast.success("Reward token address matches!");
-        } else {
-          toast.error("Reward token address mismatch!");
-          console.log("Expected:", rewardTokenAddress);
-          console.log("Actual:", contractRewardToken);
-        }
-
-        const rewardAmount = await stakingDappContract.REWARD_AMOUNT();
-        console.log("Reward amount:", rewardAmount.toString());
-        toast.info(`Reward amount per interval: ${rewardAmount.toString()}`);
-
-        const rewardInterval = await stakingDappContract.REWARD_INTERVAL();
-        console.log("Reward interval:", rewardInterval.toString());
-        toast.info(`Reward interval: ${rewardInterval.toString()} seconds`);
-      }
-    } catch (error) {
-      console.error("Error verifying contract tokens:", error);
-      toast.error("Failed to verify contract tokens");
-    }
-  };
-
-  useEffect(() => {
-    checkWalletIsConnected();
-  }, []);
-
-  useEffect(() => {
-    if (currentAccount) {
-      checkNetwork();
-      fetchStakedAndRewardAmounts();
-      fetchStkBalance();
-      fetchRewardTokenDecimals();
-    }
-  }, [currentAccount, fetchStakedAndRewardAmounts, fetchStkBalance, fetchRewardTokenDecimals]);
-
-  // Approve tokens
-  const approveTokens = async () => {
-    try {
-      if (!isValidAmount(stakingAmount)) {
-        toast.error('Invalid staking amount. Please enter a positive number.');
-        return;
-      }
-
-      const { ethereum } = window;
-
-      if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
-        const tokenContract = new ethers.Contract(stakingTokenAddress, StakingToken.abi, signer);
-
-        toast.info('Approving tokens...');
-        const amount = ethers.utils.parseUnits(stakingAmount, stakingTokenDecimals);
-        
-        // Log the parsed amount for debugging
-        console.log("Approving amount:", amount.toString());
-        
-        const approveTx = await tokenContract.approve(
-          stakingDappAddress, 
-          amount,
-          { gasLimit: 1000000 }
-        );
-        
-        toast.info('Waiting for approval confirmation...');
-        await approveTx.wait();
-        setIsApproved(true);
-        toast.success('Tokens approved successfully. You can now stake them.');
-      }
-    } catch (error) {
-      console.error('Error approving tokens:', error);
-      toast.error('Error approving tokens. See console for details.');
-    }
-  };
-
-  // Full staking process
-  const attemptStaking = async () => {
-    try {
-      if (!isValidAmount(stakingAmount)) {
-        toast.error('Invalid staking amount. Please enter a positive number.');
-        return;
-      }
-
-      const { ethereum } = window;
-      if (!ethereum) {
-        toast.error('Ethereum object not found');
-        return;
-      }
-
-      // Step 1: Check if we have enough STK tokens
-      const provider = new ethers.providers.Web3Provider(ethereum);
-      const signer = provider.getSigner();
-      const tokenContract = new ethers.Contract(stakingTokenAddress, StakingToken.abi, signer);
-      const stakingDappContract = new ethers.Contract(stakingDappAddress, StakingDapp.abi, signer);
-      
-      const balance = await tokenContract.balanceOf(currentAccount);
-      const amountToStake = ethers.utils.parseUnits(stakingAmount, stakingTokenDecimals);
-      
-      if (balance.lt(amountToStake)) {
-        toast.error(`Insufficient STK balance. You have ${ethers.utils.formatUnits(balance, stakingTokenDecimals)} STK`);
-        return;
-      }
-      
-      // Step 2: Check current allowance
-      const currentAllowance = await tokenContract.allowance(currentAccount, stakingDappAddress);
-      console.log("Current allowance:", ethers.utils.formatUnits(currentAllowance, stakingTokenDecimals));
-      
-      // Step 3: Approve if needed
-      if (currentAllowance.lt(amountToStake)) {
-        toast.info('Approving tokens...');
-        const approveTx = await tokenContract.approve(
-          stakingDappAddress,
-          amountToStake,
-          { gasLimit: 1000000 }
-        );
-        
-        toast.info('Waiting for approval confirmation...');
-        await approveTx.wait();
-        toast.success('Tokens approved successfully');
-        
-        // Verify allowance after approval
-        const newAllowance = await tokenContract.allowance(currentAccount, stakingDappAddress);
-        console.log("New allowance after approval:", ethers.utils.formatUnits(newAllowance, stakingTokenDecimals));
-      } else {
-        toast.info('Tokens already approved');
-      }
-      
-      // Step 4: Try to stake with detailed logging
-      console.log("Attempting to stake:", amountToStake.toString());
-      console.log("Staking contract:", stakingDappAddress);
-      
-      toast.info('Staking tokens...');
-      try {
-        const stakeTx = await stakingDappContract.stake(amountToStake, {
-          gasLimit: 1000000
-        });
-        
-        toast.info('Waiting for staking confirmation...');
-        const receipt = await stakeTx.wait();
-        
-        console.log("Staking receipt:", receipt);
-        if (receipt.status === 1) {
-          toast.success('Staked successfully');
-        } else {
-          toast.error('Staking transaction failed');
-        }
-        
-        fetchStakedAndRewardAmounts();
-        fetchStkBalance();
-      } catch (stakeError) {
-        console.error("Specific staking error:", stakeError);
-        
-        if (stakeError.error && stakeError.error.message) {
-          toast.error(`Staking error: ${stakeError.error.message}`);
-        } else if (stakeError.message) {
-          toast.error(`Staking error: ${stakeError.message}`);
-        } else {
-          toast.error('Unknown staking error');
-        }
-      }
-    } catch (error) {
-      console.error('Error in staking process:', error);
-      toast.error('Error in staking process. See console for details.');
-    }
-  };
-
-  // Stake tokens
-  const stakeTokens = async () => {
-    try {
-      if (!isValidAmount(stakingAmount)) {
-        toast.error('Invalid staking amount. Please enter a positive number.');
-        return;
-      }
-  
-      const { ethereum } = window;
-  
-      if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
-        const stakingDappContract = new ethers.Contract(stakingDappAddress, StakingDapp.abi, signer);
-        
-        const amount = ethers.utils.parseUnits(stakingAmount, stakingTokenDecimals);
-        
-        // Log details for debugging
-        console.log("Staking amount:", amount.toString());
-        console.log("Account:", currentAccount);
-        console.log("Contract address:", stakingDappAddress);
-        
-        toast.info('Staking tokens...');
-        const tx = await stakingDappContract.stake(amount, {
-          gasLimit: 1000000
-        });
-        
-        toast.info('Waiting for transaction confirmation...');
-        await tx.wait();
-        toast.success('Staked successfully');
-        fetchStakedAndRewardAmounts();
-        fetchStkBalance();
-      }
-    } catch (error) {
-      console.error('Error staking tokens:', error);
-      
-      // More detailed error handling
-      if (error.reason) {
-        toast.error(`Error: ${error.reason}`);
-      } else if (error.message) {
-        toast.error(`Error: ${error.message.split('(')[0]}`);
-      } else {
-        toast.error('Error staking tokens. See console for details.');
-      }
-    }
-  };
-
-  // Unstake tokens
-  const unstakeTokens = async () => {
-    try {
-      if (!isValidAmount(unstakingAmount)) {
-        toast.error('Invalid unstaking amount. Please enter a positive number.');
-        return;
-      }
-
-      // Check if unstaking amount is greater than the staked amount
-      if (parseFloat(unstakingAmount) > parseFloat(stakedAmount)) {
-        toast.error('Enter value equal to or less than the Staked STK.');
-        return;
-      }
-
-      const { ethereum } = window;
-
-      if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
-        const stakingDappContract = new ethers.Contract(stakingDappAddress, StakingDapp.abi, signer);
-
-        const amount = ethers.utils.parseUnits(unstakingAmount, stakingTokenDecimals);
-        const tx = await stakingDappContract.unstake(amount, {
-          gasLimit: 1000000
-        });
-        await tx.wait();
-        toast.success('Unstaked successfully');
-        fetchStakedAndRewardAmounts();
-        fetchStkBalance();
-      } else {
-        console.log('Ethereum object does not exist');
-      }
-    } catch (error) {
-      console.error('Error unstaking tokens:', error);
-      if (error.reason) {
-        toast.error(`Error: ${error.reason}`);
-      } else if (error.message) {
-        toast.error(`Error: ${error.message.split('(')[0]}`);
-      } else {
-        toast.error('Error unstaking tokens. See console for details.');
-      }
-    }
-  };
-
-  // Open reward modal
-  const openRewardModal = async () => {
-    try {
-      const { ethereum } = window;
-
-      if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
-        const stakingDappContract = new ethers.Contract(stakingDappAddress, StakingDapp.abi, signer);
-
-        const reward = await stakingDappContract.getRewardAmount(currentAccount);
-        const formattedReward = ethers.utils.formatUnits(reward, rewardTokenDecimals);
-        console.log(formattedReward);
-        if (parseFloat(formattedReward) > 0) {
-          setRewardAmount(formattedReward);
-          setIsModalOpen(true);
-        } else {
-          toast.info('No rewards available to claim.');
-        }
-      } else {
-        console.log('Ethereum object does not exist');
-      }
-    } catch (error) {
-      console.error('Error fetching reward amount:', error);
-      toast.error('Error fetching reward amount');
-    }
-  };
-
-  // Claim reward
-  const claimReward = async () => {
-    try {
-      if (parseFloat(rewardAmount) <= 0) {
-        toast.error('Cannot claim reward. Amount must be greater than zero.');
-        return;
-      }
-  
-      const { ethereum } = window;
-  
-      if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
-        const stakingDappContract = new ethers.Contract(stakingDappAddress, StakingDapp.abi, signer);
-  
-        // Set a high manual gas limit
-        const gasLimit = 5000000; // Higher limit to ensure success
-  
-        // Try sending the transaction with a higher gas limit
-        const tx = await stakingDappContract.claimReward({
-          gasLimit: gasLimit
-        });
-        await tx.wait();
-        toast.success('Reward claimed successfully');
-        setIsModalOpen(false);
-        fetchStakedAndRewardAmounts();
-        fetchStkBalance();
-      } else {
-        console.log('Ethereum object does not exist');
-      }
-    } catch (error) {
-      console.error('Error claiming reward:', error);
-      if (error.reason) {
-        toast.error(`Error: ${error.reason}`);
-      } else if (error.message) {
-        toast.error(`Error: ${error.message.split('(')[0]}`);
-      } else {
-        toast.error('Error claiming reward. Please check the console for details.');
-      }
-    }
-  };
-
-  // Faucet tokens
-  const faucetTokens = async (amount) => {
+  // Add function for lstBTC faucet
+  const mintLstBTC = async (amount) => {
     try {
       if (!isValidAmount(amount)) {
-        toast.error('Invalid faucet amount. Please enter a positive number less than 100.');
+        toast.error(
+          "Invalid amount. Please enter a positive number less than 100."
+        );
         return;
       }
 
       const parsedAmount = parseFloat(amount);
       if (parsedAmount >= 100) {
-        toast.error('Request amount must be less than 100.');
+        toast.error("Request amount must be less than 100.");
         return;
       }
 
+      setIsLoading(true);
       const { ethereum } = window;
 
       if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
-        const stakingTokenContract = new ethers.Contract(stakingTokenAddress, StakingToken.abi, signer);
+        const lstBTCContract = new ethers.Contract(
+          mockLiquidStakedBTCAddress,
+          MockLiquidStakedBTC.abi,
+          signer
+        );
 
         const gasLimit = 1000000;
 
-        toast.info('Minting tokens from faucet...');
-        const tx = await stakingTokenContract.mint(
-          currentAccount, 
-          ethers.utils.parseUnits(amount, stakingTokenDecimals), 
+        toast.info("Minting lstBTC tokens...");
+        const tx = await lstBTCContract.mint(
+          currentAccount,
+          ethers.utils.parseUnits(amount, lstBTCDecimals),
           {
-            gasLimit: gasLimit
+            gasLimit: gasLimit,
           }
         );
-        
-        toast.info('Waiting for transaction confirmation...');
+
+        toast.info("Waiting for transaction confirmation...");
         await tx.wait();
-        toast.success('Tokens minted successfully');
-        fetchStkBalance();
+        toast.success("lstBTC tokens minted successfully");
+        fetchLstBTCBalance();
       } else {
-        console.log('Ethereum object does not exist');
+        console.log("Ethereum object does not exist");
       }
     } catch (error) {
-      console.error('Error minting tokens:', error);
-      if (error.reason) {
-        toast.error(`Error: ${error.reason}`);
-      } else if (error.message) {
-        toast.error(`Error: ${error.message.split('(')[0]}`);
-      } else {
-        toast.error('Error minting tokens. See console for details.');
+      console.error("Error minting lstBTC tokens:", error);
+      toast.error("Error minting lstBTC tokens. See console for details.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Add function for dualCORE minting
+  const mintDualCORE = async (amount) => {
+    try {
+      if (!isValidAmount(amount)) {
+        toast.error(
+          "Invalid amount. Please enter a positive number less than 100."
+        );
+        return;
       }
+
+      setIsLoading(true);
+      const { ethereum } = window;
+
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const dualCOREContract = new ethers.Contract(
+          mockDualCOREAddress,
+          MockDualCORE.abi,
+          signer
+        );
+
+        const gasLimit = 1000000;
+
+        toast.info("Minting dualCORE tokens...");
+        const tx = await dualCOREContract.demoMint(
+          currentAccount,
+          ethers.utils.parseUnits(amount, dualCOREDecimals),
+          {
+            gasLimit: gasLimit,
+          }
+        );
+
+        toast.info("Waiting for transaction confirmation...");
+        await tx.wait();
+        toast.success("dualCORE tokens minted successfully");
+        fetchDualCOREBalance();
+      } else {
+        console.log("Ethereum object does not exist");
+      }
+    } catch (error) {
+      console.error("Error minting dualCORE tokens:", error);
+      toast.error("Error minting dualCORE tokens. See console for details.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -642,166 +516,495 @@ function App() {
   const isValidAmount = (amount) => {
     return !isNaN(Number(amount)) && parseFloat(amount) > 0;
   };
+
+  useEffect(() => {
+    checkWalletIsConnected();
+  }, []);
+
+  // Update your useEffect to call the new fetch functions
+  useEffect(() => {
+    if (currentAccount) {
+      checkNetwork();
+      fetchStakedAndRewardAmounts();
+      fetchStkBalance();
+      fetchLstBTCBalance();
+      fetchDualCOREBalance();
+    }
+  }, [
+    currentAccount,
+    fetchStakedAndRewardAmounts,
+    fetchStkBalance,
+    fetchLstBTCBalance,
+    fetchDualCOREBalance,
+  ]);
+
+  // Format number with 2 decimal places
+  const formatNumber = (num) => {
+    return parseFloat(num).toFixed(2);
+  };
+
+  // Truncate wallet address for display
+  const truncateAddress = (address) => {
+    if (!address) return "";
+    return `${address.substring(0, 6)}...${address.substring(
+      address.length - 4
+    )}`;
+  };
+
+  // Get chart data based on active period
+  const getFilteredChartData = () => {
+    let data = chartType === "revenue" ? tokenPerformanceData : apyHistoryData;
+
+    switch (activeChartPeriod) {
+      case "1W":
+        return data.slice(-7);
+      case "2W":
+        return data.slice(-14);
+      case "1M":
+        return data;
+      default:
+        return data;
+    }
+  };
+
+  // Format currency values
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(value);
+  };
+
   return (
     <div className="app-container">
-      <header className="app-header">
-        <h1>Staking DApp</h1>
-        {currentAccount && (
-          <button 
-            onClick={disconnectWalletHandler} 
-            className="btn-secondary"
+      {/* Sidebar */}
+      <div className="app-sidebar">
+        <div className="app-logo">
+          <Layers className="logo-icon" size={24} />
+          <h1>BitMax AI</h1>
+        </div>
+
+        <div className="sidebar-search">
+          <Search size={18} className="search-icon" />
+          <input type="text" placeholder="Search" className="search-input" />
+        </div>
+
+        <nav className="sidebar-nav">
+          <a
+            href="#"
+            className={`sidebar-nav-item ${
+              activeTab === "dashboard" ? "active" : ""
+            }`}
+            onClick={() => setActiveTab("dashboard")}
           >
-            Disconnect Wallet
-          </button>
-        )}
-      </header>
+            <BarChart2 size={20} />
+            <span>Dashboard</span>
+          </a>
+          <div className="sidebar-section flow-tabs">
+            <h3 className="sidebar-section-title">Token Flows</h3>
+            <button
+              className={`flow-tab ${activeTab === "stCORE" ? "active" : ""}`}
+              onClick={() => setActiveTab("stCORE")}
+            >
+              <Star size={18} />
+              <span>stCORE Flow</span>
+            </button>
+            <button
+              className={`flow-tab ${activeTab === "lstBTC" ? "active" : ""}`}
+              onClick={() => setActiveTab("lstBTC")}
+            >
+              <Activity size={18} />
+              <span>lstBTC Flow</span>
+            </button>
+            <button
+              className={`flow-tab ${activeTab === "dualCORE" ? "active" : ""}`}
+              onClick={() => setActiveTab("dualCORE")}
+            >
+              <PieChart size={18} />
+              <span>dualCORE Flow</span>
+            </button>
+          </div>
+          <a href="#" className="sidebar-nav-item">
+            <DollarSign size={20} />
+            <span>My deals</span>
+          </a>
+        </nav>
+
+        <div className="sidebar-section">
+          <h3 className="sidebar-section-title">Tools</h3>
+          <nav className="sidebar-nav">
+            <a href="#" className="sidebar-nav-item">
+              <Star size={20} />
+              <span>Settings</span>
+            </a>
+            <a href="#" className="sidebar-nav-item">
+              <Info size={20} />
+              <span>Help</span>
+            </a>
+          </nav>
+        </div>
+
+        <div className="sidebar-promo">
+          <h3 className="sidebar-promo-title">Fast Payments for Sales</h3>
+          <p className="sidebar-promo-text">
+            Get started with our premium package
+          </p>
+          <button className="btn-primary full-width">Join now</button>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="app-content">
+        <header className="app-header">
+          <h1 className="page-title">Dashboard</h1>
+
+          <div className="header-actions">
+            <div className="search-container">
+              <input
+                type="text"
+                placeholder="Search type of keywords"
+                className="header-search"
+              />
+              <Search size={18} className="header-search-icon" />
+            </div>
+
+            {currentAccount ? (
+              <div className="user-account">
+                <div className="account-badge">
+                  <div className="account-status"></div>
+                  <span>{truncateAddress(currentAccount)}</span>
+                </div>
+                <button
+                  onClick={disconnectWalletHandler}
+                  className="btn-secondary"
+                >
+                  Disconnect
+                </button>
+              </div>
+            ) : (
+              <button onClick={connectWalletHandler} className="btn-primary">
+                <Zap className="btn-icon" size={20} /> Connect Wallet
+              </button>
+            )}
+          </div>
+        </header>
+
+        <main className="dashboard-content">
+          {!currentAccount ? (
+            <div className="connect-container">
+              <Shield size={64} color="#ff7700" />
+              <h2>Connect your wallet to start using the platform</h2>
+              <p>
+                Access advanced analytics, performance tracking, and financial
+                management features.
+              </p>
+              <button onClick={connectWalletHandler} className="btn-primary">
+                <Zap className="btn-icon" size={20} /> Connect Wallet
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* Flow Header and Flow Content */}
+              {activeTab !== "dashboard" && (
+                <>
+                  <div className="flow-header">
+                    <h2 className="flow-title">
+                      {activeTab === "stCORE"
+                        ? "stCORE Flow"
+                        : activeTab === "lstBTC"
+                        ? "lstBTC Flow"
+                        : "dualCORE Flow"}
+                    </h2>
+                    <div className="flow-description">
+                      {activeTab === "stCORE"
+                        ? "Manage staked CORE tokens and yield strategies"
+                        : activeTab === "lstBTC"
+                        ? "Liquid staking for BTC with enhanced yield options"
+                        : "Dual yield strategies for CORE token holders"}
+                    </div>
+                  </div>
+
+                  {/* Flow Content */}
+                  <div className="flow-content">
+                    {activeTab === "stCORE" && (
+                      <StCOREFlow
+                        currentAccount={currentAccount}
+                        contractAddresses={CONTRACT_ADDRESSES}
+                      />
+                    )}
+                    {activeTab === "lstBTC" && (
+                      <LstBTCFlow
+                        currentAccount={currentAccount}
+                        lstBTCBalance={lstBTCBalance}
+                        mintLstBTC={mintLstBTC}
+                        contractAddresses={CONTRACT_ADDRESSES}
+                      />
+                    )}
+                    {activeTab === "dualCORE" && (
+                      <DualCoreFlow
+                        currentAccount={currentAccount}
+                        dualCOREBalance={dualCOREBalance}
+                        mintDualCORE={mintDualCORE}
+                        contractAddresses={CONTRACT_ADDRESSES}
+                      />
+                    )}
+                  </div>
+                </>
+              )}
+
+              {/* Dashboard Content - Only show if activeTab is dashboard */}
+              {activeTab === "dashboard" && (
+                <>
+                  {/* Dashboard Tabs */}
+                  <div className="dashboard-tabs">
+                    <button
+                      className={`dashboard-tab ${
+                        activeDashboardTab === "value" ? "active" : ""
+                      }`}
+                      onClick={() => setActiveDashboardTab("value")}
+                    >
+                      Value comparison
+                    </button>
+                    <button
+                      className={`dashboard-tab ${
+                        activeDashboardTab === "average" ? "active" : ""
+                      }`}
+                      onClick={() => setActiveDashboardTab("average")}
+                    >
+                      Average values
+                    </button>
+                    <button
+                      className={`dashboard-tab ${
+                        activeDashboardTab === "configure" ? "active" : ""
+                      }`}
+                      onClick={() => setActiveDashboardTab("configure")}
+                    >
+                      Configure analysis
+                    </button>
+                    <button
+                      className={`dashboard-tab ${
+                        activeDashboardTab === "filter" ? "active" : ""
+                      }`}
+                      onClick={() => setActiveDashboardTab("filter")}
+                    >
+                      Filter analysis
+                    </button>
+                  </div>
+
+                  {/* Stats Cards */}
+                  <div className="crypto-dashboard">
+      {/* Top row with BTC and CORE */}
+      {/* <div className="premium-cards">
+        <div className="premium-card btc">
+          <div className="premium-card-header">
+            <div className="premium-card-icon">
+              <Bitcoin size={24} />
+            </div>
+            <div className="premium-card-title">Bitcoin</div>
+            <div className="premium-card-badge">BTC</div>
+          </div>
+          
+          <div className="premium-card-content">
+            <div className="premium-card-value">$63,755</div>
+            <div className="premium-card-change positive">
+              <ArrowUp size={16} /> 3.4%
+            </div>
+          </div>
+          
+          <div className="premium-card-footer">
+            <div className="premium-card-metric">
+              <div className="metric-label">24h Volume</div>
+              <div className="metric-value">$28.5B</div>
+            </div>
+            <div className="premium-card-metric">
+              <div className="metric-label">Market Cap</div>
+              <div className="metric-value">$1.24T</div>
+            </div>
+          </div>
+          
+          <div className="premium-card-bg-icon">
+            <Bitcoin size={140} />
+          </div>
+        </div>
+        
+        <div className="premium-card core">
+          <div className="premium-card-header">
+            <div className="premium-card-icon">
+              <Hexagon size={24} />
+            </div>
+            <div className="premium-card-title">CORE</div>
+            <div className="premium-card-badge">CORE</div>
+          </div>
+          
+          <div className="premium-card-content">
+            <div className="premium-card-value">$2.58</div>
+            <div className="premium-card-change positive">
+              <ArrowUp size={16} /> 5.7%
+            </div>
+          </div>
+          
+          <div className="premium-card-footer">
+            <div className="premium-card-metric">
+              <div className="metric-label">24h Volume</div>
+              <div className="metric-value">$425M</div>
+            </div>
+            <div className="premium-card-metric">
+              <div className="metric-label">Market Cap</div>
+              <div className="metric-value">$258M</div>
+            </div>
+          </div>
+          
+          <div className="premium-card-bg-icon">
+            <Hexagon size={140} />
+          </div>
+        </div>
+      </div> */}
       
-      <main className="app-main">
-      {!currentAccount ? (
-        <div className="connect-container">
-          <h2>Connect your wallet to get started</h2>
-          <button 
-            onClick={connectWalletHandler} 
-            className="btn-primary"
-          >
-            Connect Wallet
+      {/* Bottom row with stCORE, lstBTC, and dualCORE */}
+      {/* <div className="secondary-cards">
+        <div className="stats-card accent">
+          <div className="stats-card-icon stcore">
+            <Star size={20} />
+          </div>
+          <div className="stats-card-content">
+            <h3 className="stats-card-title">stCORE</h3>
+            <div className="stats-card-value">$2.82</div>
+            <div className="stats-card-change positive">
+              <ArrowUp size={14} /> 6.1%
+            </div>
+            <div className="stats-card-prev">APY: 9.5%</div>
+          </div>
+          <div className="stats-card-arrow">
+            <ArrowUp size={16} />
+          </div>
+        </div>
+
+        <div className="stats-card">
+          <div className="stats-card-icon lstbtc">
+            <Activity size={20} />
+          </div>
+          <div className="stats-card-content">
+            <h3 className="stats-card-title">lstBTC</h3>
+            <div className="stats-card-value">$64,821</div>
+            <div className="stats-card-change negative">
+              <ArrowDown size={14} /> 1.2%
+            </div>
+            <div className="stats-card-prev">Premium: +1.7%</div>
+          </div>
+          <div className="stats-card-arrow">
+            <ArrowDown size={16} className="down" />
+          </div>
+        </div>
+
+        <div className="stats-card">
+          <div className="stats-card-icon dualcore">
+            <PieChart size={20} />
+          </div>
+          <div className="stats-card-content">
+            <h3 className="stats-card-title">dualCORE</h3>
+            <div className="stats-card-value">$3.14</div>
+            <div className="stats-card-change positive">
+              <ArrowUp size={14} /> 8.2%
+            </div>
+            <div className="stats-card-prev">APY: 12.5%</div>
+          </div>
+          <div className="stats-card-arrow">
+            <ArrowUp size={16} />
+          </div>
+        </div>
+      </div> */}
+    </div>
+                  {/* Sales Dynamics Chart */}
+
+                  <CryptoPriceChart />
+                  <br />
+                  <br />
+                  <br />
+
+                  {/* Orders List and Performance Charts */}
+                  <div className="orders-list-container">
+      <div className="card-header">
+        <h2 className="card-title">Positions</h2>
+        <div className="card-badge">{ordersData.length} items</div>
+        <div className="card-actions">
+          <button className="btn-icon-only">
+            <RefreshCw size={16} />
+          </button>
+          <button className="btn-icon-only">
+            <Plus size={16} />
           </button>
         </div>
-      ) : (
-        <>
-          {/* Balance cards remain the same */}
-          <div className="balance-cards">
-            <div className="card">
-              <h3>STK Balance</h3>
-              <p className="balance-value">{totalStkBalance} STK</p>
-            </div>
-            <div className="card">
-              <h3>Staked STK Amount</h3>
-              <p className="balance-value">{stakedAmount} STK</p>
-            </div>
-            <div className="card">
-              <h3>Reward Amount</h3>
-              <p className="balance-value">{rewardAmount} RTK</p>
-              <button 
-                onClick={openRewardModal} 
-                className="btn-primary full-width"
-              >
-                Claim Reward
-              </button>
-            </div>
-          </div>
+      </div>
 
-          {/* Add navigation tabs for different components */}
-          <div className="tabs-container">
-            <div className="tabs">
-              <button 
-                className={`tab ${activeTab === 'staking' ? 'active' : ''}`}
-                onClick={() => setActiveTab('staking')}
-              >
-                Staking
-              </button>
-              <button 
-                className={`tab ${activeTab === 'redemption' ? 'active' : ''}`}
-                onClick={() => setActiveTab('redemption')}
-              >
-                PT Redemption
-              </button>
-              <button 
-                className={`tab ${activeTab === 'wrapping' ? 'active' : ''}`}
-                onClick={() => setActiveTab('wrapping')}
-              >
-                SY Wrapping
-              </button>
-              <button 
-                className={`tab ${activeTab === 'splitting' ? 'active' : ''}`}
-                onClick={() => setActiveTab('splitting')}
-              >
-                Token Splitting
-              </button>
-              <button 
-                className={`tab ${activeTab === 'trading' ? 'active' : ''}`}
-                onClick={() => setActiveTab('trading')}
-              >
-                Token Trading
-              </button>
-            </div>
-          </div>
-
-          {/* Conditional rendering based on active tab */}
-          {activeTab === 'staking' && (
-            <>
-              <div className="card">
-                <h3>Diagnostic Tools</h3>
-                <div className="button-grid">
-                  <button onClick={checkAllowance} className="btn-secondary">Check Allowance</button>
-                  <button onClick={checkBalances} className="btn-secondary">Check Balances</button>
-                  <button onClick={verifyContractTokens} className="btn-secondary">Verify Contract</button>
-                  <button onClick={attemptStaking} className="btn-secondary">Full Staking Process</button>
-                  <button onClick={checkContractExists} className="btn-secondary">Check Contract Exists</button>
-                </div>
-              </div>
-
-              <div className="action-cards">
-                <div className="card">
-                  <h3>Stake Tokens</h3>
-                  <input
-                    type="text"
-                    placeholder="Amount to stake"
-                    value={stakingAmount}
-                    onChange={(e) => setStakingAmount(e.target.value)}
-                    className="input-field"
-                  />
-                  <div className="button-group">
-                    <button onClick={approveTokens} className="btn-success">Approve</button>
-                    <button onClick={stakeTokens} className="btn-primary">Stake</button>
+      <div className="orders-table-container">
+        <table className="orders-table">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Action</th>
+              <th>Implied APY</th>
+              <th>Value</th>
+              <th>Notional Size</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ordersData.map((order, index) => (
+              <tr key={index}>
+                <td>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <span style={{ color: 'var(--accent-color)' }}>{order.id}</span>
+                    <button 
+                      // onClick={() => handleCopyAddress(order.id)}
+                      style={{ 
+                        marginLeft: '8px', 
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--secondary-text)',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {/* <Copy size={14} /> */}
+                    </button>
                   </div>
-                </div>
-
-                <div className="card">
-                  <h3>Unstake Tokens</h3>
-                  <input
-                    type="text"
-                    placeholder="Amount to unstake"
-                    value={unstakingAmount}
-                    onChange={(e) => setUnstakingAmount(e.target.value)}
-                    className="input-field"
-                  />
-                  <button onClick={unstakeTokens} className="btn-primary full-width">Unstake</button>
-                </div>
-
-                <div className="card">
-                  <h3>STK Faucet</h3>
-                  <input
-                    type="text"
-                    placeholder="Faucet amount"
-                    value={faucetAmount}
-                    onChange={(e) => setFaucetAmount(e.target.value)}
-                    className="input-field"
-                  />
-                  <button 
-                    onClick={() => faucetTokens(faucetAmount)} 
-                    className="btn-primary full-width"
-                  >
-                    STK Faucet
-                  </button>
-                </div>
-              </div>
+                </td>
+                <td>
+                  <span style={{ color: 'var(--accent-color)' }}>{order.action}</span>
+                </td>
+                <td>
+                  <span style={{ color: 'var(--success-color)' }}>{order.apy}</span>
+                </td>
+                <td>
+                  <span style={{ fontWeight: '500' }}>{order.value}</span>
+                </td>
+                <td>
+                  <span style={{ color: 'var(--secondary-text)' }}>{order.notionalSize}</span>
+                </td>
+                <td>
+                  <span style={{ color: 'var(--secondary-text)' }}>{order.time}</span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+                </>
+              )}
             </>
           )}
+        </main>
+      </div>
 
-          {activeTab === 'redemption' && <PTRedemption currentAccount={currentAccount} />}
-          {activeTab === 'wrapping' && <SYWrapping currentAccount={currentAccount} />}
-          {activeTab === 'splitting' && <TokenSplitting currentAccount={currentAccount} />}
-          {activeTab === 'trading' && <TokenTrading currentAccount={currentAccount} />}
-        </>
-      )}
-    </main>
-      
       <ToastContainer position="bottom-right" theme="dark" />
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onClaim={claimReward}
+        onClaim={() => {
+          // Claim logic here
+          setIsModalOpen(false);
+          toast.success("Rewards claimed successfully!");
+        }}
         rewardAmount={rewardAmount}
       />
     </div>
