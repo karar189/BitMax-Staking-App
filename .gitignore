@@ -15,3 +15,6 @@ frontend/build/
 secret.json
 .env
 .DS_Store
+
+   # macOS resource-fork files
+   ._* 
