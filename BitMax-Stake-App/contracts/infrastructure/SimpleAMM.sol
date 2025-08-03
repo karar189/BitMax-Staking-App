@@ -121,11 +121,7 @@ contract SimpleAMM is Ownable, Pausable, ReentrancyGuard {
     /// @param reserveIn Reserve of input token
     /// @param reserveOut Reserve of output token
     /// @return Amount of output token
-    function getAmountOut(uint256 amountIn, uint256 reserveIn, uint256 reserveOut) 
-        public 
-        view 
-        returns (uint256) 
-    {
+    function getAmountOut(uint256 amountIn, uint256 reserveIn, uint256 reserveOut) public view returns (uint256) {
         require(amountIn > 0, "Invalid input amount");
         require(reserveIn > 0 && reserveOut > 0, "Insufficient liquidity");
         
@@ -158,26 +154,5 @@ contract SimpleAMM is Ownable, Pausable, ReentrancyGuard {
     function unpause() external onlyOwner {
         _unpause();
         emit AMMUnpaused(msg.sender);
-    }
-        
-        tokenB.transferFrom(msg.sender, address(this), amountIn);
-        tokenA.transfer(msg.sender, amountOut);
-        
-        reserveB += amountIn;
-        reserveA -= amountOut;
-        
-        emit Swap(msg.sender, amountIn, amountOut, false);
-    }
-    
-    // Quote function
-    function getAmountOut(uint256 amountIn, uint256 reserveIn, uint256 reserveOut) public view returns (uint256) {
-        require(amountIn > 0, "Amount in must be greater than 0");
-        require(reserveIn > 0 && reserveOut > 0, "Insufficient liquidity");
-        
-        uint256 amountInWithFee = amountIn * (FEE_DENOMINATOR - fee);
-        uint256 numerator = amountInWithFee * reserveOut;
-        uint256 denominator = reserveIn * FEE_DENOMINATOR + amountInWithFee;
-        
-        return numerator / denominator;
     }
 }

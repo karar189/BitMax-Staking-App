@@ -176,22 +176,4 @@ contract StakingDapp is Ownable, Pausable, ReentrancyGuard {
         emit StakingUnpaused(msg.sender);
     }
     }
-
-    function calculateReward(address user) internal view returns (uint256) {
-        Stake memory userStake = stakes[user];
-        if (userStake.amount == 0) {
-            return 0;
-        }
-
-        uint256 currentTime = block.timestamp;
-        uint256 timeSinceLastReward = currentTime - userStake.lastRewardTime;
-        uint256 intervalsPassed = timeSinceLastReward / REWARD_INTERVAL;
-        // Calculate reward based on intervals passed and staked amount
-        return intervalsPassed * REWARD_AMOUNT * userStake.amount; // 1e18; // Assumes REWARD_AMOUNT and staked amount are in the same decimal place
-    }
-    function getRewardAmount(address user) external view returns (uint256) {
-        uint256 reward = calculateReward(user);
-        return reward;
-    }
-
 }

@@ -5,6 +5,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Pausable} from "@openzeppelin/contracts/security/Pausable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {StandardizedTokenWrapper} from "../tokens/StandardizedTokenWrapper.sol";
 import {PTToken} from "../tokens/PTToken.sol";
 import {YTToken} from "../tokens/YTToken.sol";
 
@@ -12,12 +13,28 @@ import {YTToken} from "../tokens/YTToken.sol";
 /// @notice Splits a standardized yield token (SY) into Principal (PT) and Yield (YT) tokens
 /// @dev Implements Pausable and ReentrancyGuard for security, and uses named imports for better code clarity
 contract GenericYieldTokenization is Ownable, Pausable, ReentrancyGuard {
-    IERC20 public syToken;
+    /// @notice The standardized yield token being split
+    /// @dev This token is wrapped and split into PT and YT tokens
+    StandardizedTokenWrapper public syToken;
+
+    /// @notice Base name used for creating PT and YT token names
+    /// @dev Combined with "PT " or "YT " prefix when creating new tokens
     string public baseName;
+
+    /// @notice Base symbol used for creating PT and YT token symbols
+    /// @dev Combined with "PT-" or "YT-" prefix when creating new tokens
     string public baseSymbol;
 
+    /// @notice Mapping from maturity timestamp to PT token address
+    /// @dev Used to track all PT tokens created for different maturities
     mapping(uint256 => address) public ptTokens;
+
+    /// @notice Mapping from maturity timestamp to YT token address
+    /// @dev Used to track all YT tokens created for different maturities
     mapping(uint256 => address) public ytTokens;
+
+    /// @notice List of all maturity timestamps
+    /// @dev Used to track and iterate over all available maturities
     uint256[] public maturities;
 
     /// @notice Emitted when tokens are split into PT and YT
