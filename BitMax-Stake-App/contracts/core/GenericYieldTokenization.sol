@@ -1,14 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "../tokens/PTToken.sol";
-import "../tokens/YTToken.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {Pausable} from "@openzeppelin/contracts/security/Pausable.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {PTToken} from "../tokens/PTToken.sol";
+import {YTToken} from "../tokens/YTToken.sol";
 
 /// @title Generic Yield Tokenization Router
 /// @notice Splits a standardized yield token (SY) into Principal (PT) and Yield (YT) tokens
-contract GenericYieldTokenization is Ownable {
+/// @dev Implements Pausable and ReentrancyGuard for security, and uses named imports for better code clarity
+contract GenericYieldTokenization is Ownable, Pausable, ReentrancyGuard {
     IERC20 public syToken;
     string public baseName;
     string public baseSymbol;
@@ -17,17 +20,47 @@ contract GenericYieldTokenization is Ownable {
     mapping(uint256 => address) public ytTokens;
     uint256[] public maturities;
 
+    /// @notice Emitted when tokens are split into PT and YT
+    /// @param user The address of the user who split the tokens
+    /// @param amount The amount of tokens split
+    /// @param maturity The maturity timestamp for the split tokens
     event TokensSplit(address indexed user, uint256 amount, uint256 indexed maturity);
+
+    /// @notice Emitted when PT tokens are redeemed for the underlying SY token
+    /// @param user The address of the user who redeemed the tokens
+    /// @param amount The amount of tokens redeemed
+    /// @param maturity The maturity timestamp of the redeemed tokens
     event TokensRedeemed(address indexed user, uint256 amount, uint256 indexed maturity);
+
+    /// @notice Emitted when a new maturity date is created with corresponding PT and YT tokens
+    /// @param maturity The timestamp for the new maturity
+    /// @param pt The address of the created PT token
+    /// @param yt The address of the created YT token
     event MaturityCreated(uint256 indexed maturity, address pt, address yt);
 
-    constructor(address _syToken, string memory _baseName, string memory _baseSymbol) Ownable(msg.sender) {
+    /// @notice Emitted when the contract is paused
+    event ContractPaused(address indexed by);
+
+    /// @notice Emitted when the contract is unpaused
+    event ContractUnpaused(address indexed by);
+
+    /// @notice Initializes the contract with the underlying SY token and naming parameters
+    /// @param _syToken The address of the standardized yield token
+    /// @param _baseName The base name for PT and YT tokens
+    /// @param _baseSymbol The base symbol for PT and YT tokens
+    constructor(address _syToken, string memory _baseName, string memory _baseSymbol) 
+        Ownable(msg.sender) 
+    {
+        require(_syToken != address(0), "Invalid SY token");
         syToken = IERC20(_syToken);
         baseName = _baseName;
         baseSymbol = _baseSymbol;
         createMaturity(block.timestamp + 30 days);
     }
 
+    /// @notice Creates a new maturity date with corresponding PT and YT tokens
+    /// @param maturity The timestamp for the new maturity
+    /// @dev Only callable by owner, creates new PT and YT token contracts
     function createMaturity(uint256 maturity) public onlyOwner {
         require(maturity > block.timestamp, "future maturity only");
         require(ptTokens[maturity] == address(0), "exists");
@@ -42,24 +75,55 @@ contract GenericYieldTokenization is Ownable {
         emit MaturityCreated(maturity, address(pt), address(yt));
     }
 
-    function split(uint256 amount, uint256 maturity) external {
+    /// @notice Splits SY tokens into corresponding PT and YT tokens
+    /// @param amount The amount of SY tokens to split
+    /// @param maturity The maturity timestamp to split into
+    /// @dev Requires contract to be unpaused and protects against reentrancy
+    function split(uint256 amount, uint256 maturity) external nonReentrant whenNotPaused {
+        require(amount > 0, "amount must be > 0");
         require(ptTokens[maturity] != address(0), "bad maturity");
+        
         syToken.transferFrom(msg.sender, address(this), amount);
         PTToken(ptTokens[maturity]).mint(msg.sender, amount);
         YTToken(ytTokens[maturity]).mint(msg.sender, amount);
+        
         emit TokensSplit(msg.sender, amount, maturity);
     }
 
-    function redeem(uint256 amount, uint256 maturity) external {
+    /// @notice Redeems mature PT tokens for the underlying SY token
+    /// @param amount The amount of PT tokens to redeem
+    /// @param maturity The maturity timestamp of the tokens
+    /// @dev Requires contract to be unpaused and protects against reentrancy
+    function redeem(uint256 amount, uint256 maturity) external nonReentrant whenNotPaused {
+        require(amount > 0, "amount must be > 0");
         require(block.timestamp >= maturity, "not mature");
+        
         PTToken pt = PTToken(ptTokens[maturity]);
         require(pt.balanceOf(msg.sender) >= amount, "no PT");
+        
         pt.burnFrom(msg.sender, amount);
         syToken.transfer(msg.sender, amount);
+        
         emit TokensRedeemed(msg.sender, amount, maturity);
     }
 
+    /// @notice Returns all available maturity timestamps
+    /// @return Array of maturity timestamps
     function getMaturities() external view returns (uint256[] memory) {
         return maturities;
+    }
+
+    /// @notice Pauses all non-view functions
+    /// @dev Only callable by owner
+    function pause() external onlyOwner {
+        _pause();
+        emit ContractPaused(msg.sender);
+    }
+
+    /// @notice Unpauses all non-view functions
+    /// @dev Only callable by owner
+    function unpause() external onlyOwner {
+        _unpause();
+        emit ContractUnpaused(msg.sender);
     }
 }
