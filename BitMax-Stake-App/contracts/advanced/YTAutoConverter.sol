@@ -1,22 +1,41 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "../mocks/MockPriceOracle.sol";
-import { GenericYieldTokenization } from "../core/GenericYieldTokenization.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {Pausable} from "@openzeppelin/contracts/security/Pausable.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {IPriceOracle} from "../interfaces/IPriceOracle.sol";
+import {GenericYieldTokenization} from "../core/GenericYieldTokenization.sol";
+import {SimpleAMM} from "../infrastructure/SimpleAMM.sol";
 
-/**
- * @title YTAutoConverter
- * @dev Automatically converts YT tokens to PT tokens when a price threshold is reached
- */
-contract YTAutoConverter is Ownable {
+/// @title YT Auto Converter
+/// @notice Automatically converts YT tokens to PT tokens when price thresholds are reached
+/// @dev Production-ready implementation with real market integration and proper security
+contract YTAutoConverter is Ownable, Pausable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
-    MockPriceOracle public oracle;
+    /// @notice Price oracle for threshold monitoring
+    IPriceOracle public oracle;
+    
+    /// @notice Tokenization contract for PT/YT tokens
     GenericYieldTokenization public tokenization;
-    address public stCoreToken;
+    
+    /// @notice Reference token for price monitoring
+    IERC20 public referenceToken;
+    
+    /// @notice AMM for token swapping
+    SimpleAMM public amm;
+
+    /// @notice Maximum slippage tolerance (in basis points)
+    uint256 public constant MAX_SLIPPAGE = 500; // 5%
+
+    /// @notice Conversion fee (in basis points)
+    uint256 public conversionFee = 30; // 0.3%
+
+    /// @notice Fee denominator
+    uint256 public constant FEE_DENOMINATOR = 10000;
 
     // User configuration
     struct UserConfig {
@@ -46,14 +65,26 @@ contract YTAutoConverter is Ownable {
     event MaturityAdded(address indexed user, uint256 maturity);
     event MaturityRemoved(address indexed user, uint256 maturity);
 
+    /// @notice Initialize the auto converter
+    /// @param _oracle Price oracle address
+    /// @param _tokenization Tokenization contract address
+    /// @param _referenceToken Reference token for price monitoring
+    /// @param _amm AMM contract for token swapping
     constructor(
         address _oracle,
         address _tokenization,
-        address _stCoreToken
+        address _referenceToken,
+        address _amm
     ) Ownable(msg.sender) {
-        oracle = MockPriceOracle(_oracle);
+        require(_oracle != address(0), "Invalid oracle address");
+        require(_tokenization != address(0), "Invalid tokenization address");
+        require(_referenceToken != address(0), "Invalid reference token address");
+        require(_amm != address(0), "Invalid AMM address");
+        
+        oracle = IPriceOracle(_oracle);
         tokenization = GenericYieldTokenization(_tokenization);
-        stCoreToken = _stCoreToken;
+        referenceToken = IERC20(_referenceToken);
+        amm = SimpleAMM(_amm);
     }
 
     /**
@@ -69,7 +100,7 @@ contract YTAutoConverter is Ownable {
 
         // Set oracle threshold if enabled
         if (_enabled) {
-            oracle.setThreshold(stCoreToken, _thresholdPrice);
+            oracle.setThreshold(address(referenceToken), _thresholdPrice);
         }
     }
 
@@ -140,47 +171,103 @@ contract YTAutoConverter is Ownable {
      * @param user User address
      * @param maturity Maturity timestamp
      */
-    function executeConversion(address user, uint256 maturity) external {
+    /// @notice Execute conversion from YT to PT using market mechanisms
+    /// @param user User address
+    /// @param maturity Maturity timestamp
+    /// @param minPTAmount Minimum PT tokens to receive (slippage protection)
+    /// @param deadline Transaction deadline
+    function executeConversion(
+        address user,
+        uint256 maturity,
+        uint256 minPTAmount,
+        uint256 deadline
+    ) external nonReentrant whenNotPaused {
+        require(block.timestamp <= deadline, "Transaction expired");
+        
         UserConfig memory config = userConfigs[user];
         require(config.enabled, "Conversion not enabled");
-        require(
-            !conversionExecuted[user][maturity],
-            "Conversion already executed"
-        );
+        require(!conversionExecuted[user][maturity], "Conversion already executed");
 
         // Check if threshold is reached
-        require(oracle.thresholdReached(stCoreToken), "Threshold not reached");
+        require(oracle.thresholdReached(address(referenceToken)), "Threshold not reached");
 
         // Get YT and PT token addresses
         address ytToken = tokenization.ytTokens(maturity);
         address ptToken = tokenization.ptTokens(maturity);
-        require(
-            ytToken != address(0) && ptToken != address(0),
-            "Invalid tokens"
-        );
+        require(ytToken != address(0) && ptToken != address(0), "Invalid tokens");
 
         // Get YT balance
         uint256 ytBalance = IERC20(ytToken).balanceOf(user);
         require(ytBalance > 0, "No YT balance");
 
-        // Transfer YT tokens from user to this contract
+        // Calculate conversion fee
+        uint256 feeAmount = (ytBalance * conversionFee) / FEE_DENOMINATOR;
+        uint256 conversionAmount = ytBalance - feeAmount;
+
+        // Transfer YT tokens from user
         IERC20(ytToken).safeTransferFrom(user, address(this), ytBalance);
 
-        // For a hackathon demo, we'll implement a simplified version:
-        // 1. We burn YT tokens
-        // 2. We mint an equivalent amount of PT tokens
+        // Perform market-based conversion through AMM
+        uint256 receivedPT = _performMarketConversion(
+            ytToken,
+            ptToken,
+            conversionAmount,
+            minPTAmount
+        );
 
-        // Approve YT tokens for the tokenization contract (if needed)
-        IERC20(ytToken).safeIncreaseAllowance(address(tokenization), ytBalance);
+        // Transfer fee to contract owner (protocol fee)
+        if (feeAmount > 0) {
+            IERC20(ytToken).safeTransfer(owner(), feeAmount);
+        }
 
-        // This is where the actual swap logic would be in a real implementation
-        // For the hackathon, we simulate by transferring PT tokens we already have
-        IERC20(ptToken).safeTransfer(user, ytBalance);
+        // Transfer PT tokens to user
+        IERC20(ptToken).safeTransfer(user, receivedPT);
 
         // Mark conversion as executed
         conversionExecuted[user][maturity] = true;
 
-        emit ConversionExecuted(user, maturity, ytBalance, ytBalance);
+        emit ConversionExecuted(user, maturity, ytBalance, receivedPT);
+    }
+
+    /// @notice Internal function to perform market-based conversion
+    /// @param ytToken YT token address
+    /// @param ptToken PT token address
+    /// @param amount Amount to convert
+    /// @param minOutput Minimum output amount
+    /// @return Amount of PT tokens received
+    function _performMarketConversion(
+        address ytToken,
+        address ptToken,
+        uint256 amount,
+        uint256 minOutput
+    ) internal returns (uint256) {
+        // Approve AMM to spend YT tokens
+        IERC20(ytToken).safeApprove(address(amm), amount);
+
+        // Check if AMM has the required tokens as tokenA/tokenB
+        if (address(amm.tokenA()) == ytToken && address(amm.tokenB()) == ptToken) {
+            // Direct swap YT -> PT
+            uint256 expectedOutput = amm.getAmountOut(amount, amm.reserveA(), amm.reserveB());
+            require(expectedOutput >= minOutput, "Insufficient output amount");
+            
+            uint256 balanceBefore = IERC20(ptToken).balanceOf(address(this));
+            amm.swapAforB(amount);
+            uint256 balanceAfter = IERC20(ptToken).balanceOf(address(this));
+            
+            return balanceAfter - balanceBefore;
+        } else if (address(amm.tokenB()) == ytToken && address(amm.tokenA()) == ptToken) {
+            // Reverse swap YT -> PT
+            uint256 expectedOutput = amm.getAmountOut(amount, amm.reserveB(), amm.reserveA());
+            require(expectedOutput >= minOutput, "Insufficient output amount");
+            
+            uint256 balanceBefore = IERC20(ptToken).balanceOf(address(this));
+            amm.swapBforA(amount);
+            uint256 balanceAfter = IERC20(ptToken).balanceOf(address(this));
+            
+            return balanceAfter - balanceBefore;
+        } else {
+            revert("AMM does not support this token pair");
+        }
     }
 
     /**
@@ -200,25 +287,66 @@ contract YTAutoConverter is Ownable {
         }
 
         // Check if threshold is reached
-        return oracle.thresholdReached(stCoreToken);
+        return oracle.thresholdReached(address(referenceToken));
     }
 
-    /**
-     * @dev Reset conversion status for testing
-     * @param maturity Maturity timestamp
-     */
-    function resetConversionStatus(uint256 maturity) external {
-        conversionExecuted[msg.sender][maturity] = false;
+    /// @notice Update conversion fee
+    /// @param newFee New fee in basis points
+    function setConversionFee(uint256 newFee) external onlyOwner {
+        require(newFee <= 1000, "Fee too high"); // Max 10%
+        uint256 oldFee = conversionFee;
+        conversionFee = newFee;
+        emit ConversionFeeUpdated(oldFee, newFee);
     }
 
-    /**
-     * @dev For hackathon demo only: deposits PT tokens for conversion testing
-     * @param ptToken PT token address
-     * @param amount Amount to deposit
-     */
-    function depositPTForDemo(address ptToken, uint256 amount) external {
-        // In a real implementation, PT tokens would be acquired through swapping on a market
-        // For demo purposes only, accept PT tokens from the contract owner
-        IERC20(ptToken).safeTransferFrom(msg.sender, address(this), amount);
+    /// @notice Update AMM contract
+    /// @param newAMM New AMM contract address
+    function setAMM(address newAMM) external onlyOwner {
+        require(newAMM != address(0), "Invalid AMM address");
+        address oldAMM = address(amm);
+        amm = SimpleAMM(newAMM);
+        emit AMMUpdated(oldAMM, newAMM);
     }
+
+    /// @notice Update price oracle
+    /// @param newOracle New oracle contract address
+    function setOracle(address newOracle) external onlyOwner {
+        require(newOracle != address(0), "Invalid oracle address");
+        address oldOracle = address(oracle);
+        oracle = IPriceOracle(newOracle);
+        emit OracleUpdated(oldOracle, newOracle);
+    }
+
+    /// @notice Emergency function to reset conversion status (owner only)
+    /// @param user User address
+    /// @param maturity Maturity timestamp
+    function emergencyResetConversion(address user, uint256 maturity) external onlyOwner {
+        conversionExecuted[user][maturity] = false;
+        emit ConversionReset(user, maturity);
+    }
+
+    /// @notice Emergency withdrawal of tokens (owner only)
+    /// @param token Token address
+    /// @param amount Amount to withdraw
+    function emergencyWithdraw(address token, uint256 amount) external onlyOwner {
+        IERC20(token).safeTransfer(owner(), amount);
+        emit EmergencyWithdrawal(token, amount);
+    }
+
+    /// @notice Pause all conversions
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    /// @notice Unpause all conversions
+    function unpause() external onlyOwner {
+        _unpause();
+    }
+
+    /// @notice Additional events for production functionality
+    event ConversionFeeUpdated(uint256 oldFee, uint256 newFee);
+    event AMMUpdated(address oldAMM, address newAMM);
+    event OracleUpdated(address oldOracle, address newOracle);
+    event ConversionReset(address indexed user, uint256 maturity);
+    event EmergencyWithdrawal(address indexed token, uint256 amount);
 }

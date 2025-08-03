@@ -69,7 +69,7 @@ contract GenericYieldTokenization is Ownable, Pausable, ReentrancyGuard {
         Ownable(msg.sender) 
     {
         require(_syToken != address(0), "Invalid SY token");
-        syToken = IERC20(_syToken);
+        syToken = StandardizedTokenWrapper(_syToken);
         baseName = _baseName;
         baseSymbol = _baseSymbol;
         createMaturity(block.timestamp + 30 days);
