@@ -176,4 +176,3 @@ contract StakingDapp is Ownable, Pausable, ReentrancyGuard {
         emit StakingUnpaused(msg.sender);
     }
     }
-}
