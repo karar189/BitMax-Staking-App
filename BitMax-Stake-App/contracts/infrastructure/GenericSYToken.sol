@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 /// @title Generic Standardized Yield (SY) Token
 /// @notice Wraps any interest-bearing token to standardize yield tokenization
 contract GenericSYToken is ERC20, Ownable {
-    IERC20 public immutable underlying;
+    IERC20 public underlying;
     uint256 public yieldRateBps;   // e.g. 500 = 5%
     bool public productionMode;
 

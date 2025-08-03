@@ -9,9 +9,9 @@ import "../tokens/YTToken.sol";
 /// @title Generic Yield Tokenization Router
 /// @notice Splits a standardized yield token (SY) into Principal (PT) and Yield (YT) tokens
 contract GenericYieldTokenization is Ownable {
-    IERC20 public immutable syToken;
-    string public immutable baseName;
-    string public immutable baseSymbol;
+    IERC20 public syToken;
+    string public baseName;
+    string public baseSymbol;
 
     mapping(uint256 => address) public ptTokens;
     mapping(uint256 => address) public ytTokens;

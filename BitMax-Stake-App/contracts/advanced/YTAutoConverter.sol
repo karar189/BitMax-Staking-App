@@ -4,8 +4,8 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "./MockPriceOracle.sol";
-import "./YieldTokenization.sol";
+import "../mocks/MockPriceOracle.sol";
+import { GenericYieldTokenization } from "../core/GenericYieldTokenization.sol";
 
 /**
  * @title YTAutoConverter
@@ -15,7 +15,7 @@ contract YTAutoConverter is Ownable {
     using SafeERC20 for IERC20;
 
     MockPriceOracle public oracle;
-    YieldTokenization public tokenization;
+    GenericYieldTokenization public tokenization;
     address public stCoreToken;
 
     // User configuration
@@ -52,7 +52,7 @@ contract YTAutoConverter is Ownable {
         address _stCoreToken
     ) Ownable(msg.sender) {
         oracle = MockPriceOracle(_oracle);
-        tokenization = YieldTokenization(_tokenization);
+        tokenization = GenericYieldTokenization(_tokenization);
         stCoreToken = _stCoreToken;
     }
 

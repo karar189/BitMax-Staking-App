@@ -16,5 +16,5 @@ secret.json
 .env
 .DS_Store
 
-   # macOS resource-fork files
+# macOS resource-fork files
    ._* 
