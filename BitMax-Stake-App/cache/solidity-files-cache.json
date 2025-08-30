@@ -2,7 +2,7 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/Users/swetakarar/Desktop/code/BitMax-Staking-App/BitMax-Stake-App/contracts/advanced/YTAutoConverter.sol": {
-      "lastModificationDate": 1756563248670,
+      "lastModificationDate": 1756563496576,
       "contentHash": "76a544fe8c2af745ba8576c2d26179dd",
       "sourceName": "contracts/advanced/YTAutoConverter.sol",
       "solcConfig": {
@@ -47,7 +47,7 @@
       ]
     },
     "/Users/swetakarar/Desktop/code/BitMax-Staking-App/BitMax-Stake-App/contracts/interfaces/IPriceOracle.sol": {
-      "lastModificationDate": 1756563281511,
+      "lastModificationDate": 1756563496576,
       "contentHash": "11996168ca3767ed017e105c4b8d78f4",
       "sourceName": "contracts/interfaces/IPriceOracle.sol",
       "solcConfig": {
@@ -83,7 +83,7 @@
       ]
     },
     "/Users/swetakarar/Desktop/code/BitMax-Staking-App/BitMax-Stake-App/contracts/core/GenericYieldTokenization.sol": {
-      "lastModificationDate": 1756563178451,
+      "lastModificationDate": 1756563496576,
       "contentHash": "c756801f11f86fcc2ca0b3c1d2364bc8",
       "sourceName": "contracts/core/GenericYieldTokenization.sol",
       "solcConfig": {
@@ -127,7 +127,7 @@
       ]
     },
     "/Users/swetakarar/Desktop/code/BitMax-Staking-App/BitMax-Stake-App/contracts/infrastructure/SimpleAMM.sol": {
-      "lastModificationDate": 1756563184675,
+      "lastModificationDate": 1756563496576,
       "contentHash": "2c1e6e2e5e69a087c18abe94a5802973",
       "sourceName": "contracts/infrastructure/SimpleAMM.sol",
       "solcConfig": {
@@ -167,10 +167,10 @@
         "SimpleAMM"
       ]
     },
-    "/Users/swetakarar/Desktop/code/BitMax-Staking-App/BitMax-Stake-App/node_modules/@openzeppelin/contracts/security/Pausable.sol": {
+    "/Users/swetakarar/Desktop/code/BitMax-Staking-App/BitMax-Stake-App/node_modules/@openzeppelin/contracts/access/Ownable.sol": {
       "lastModificationDate": 1756563072364,
-      "contentHash": "25c8108f36fdd472bc78d4c4af240c11",
-      "sourceName": "@openzeppelin/contracts/security/Pausable.sol",
+      "contentHash": "5a20b2cad87ddb61c7a3a6af21289e28",
+      "sourceName": "@openzeppelin/contracts/access/Ownable.sol",
       "solcConfig": {
         "version": "0.8.24",
         "settings": {
@@ -202,7 +202,7 @@
         "^0.8.0"
       ],
       "artifacts": [
-        "Pausable"
+        "Ownable"
       ]
     },
     "/Users/swetakarar/Desktop/code/BitMax-Staking-App/BitMax-Stake-App/node_modules/@openzeppelin/contracts/security/ReentrancyGuard.sol": {
@@ -241,10 +241,10 @@
         "ReentrancyGuard"
       ]
     },
-    "/Users/swetakarar/Desktop/code/BitMax-Staking-App/BitMax-Stake-App/node_modules/@openzeppelin/contracts/access/Ownable.sol": {
+    "/Users/swetakarar/Desktop/code/BitMax-Staking-App/BitMax-Stake-App/node_modules/@openzeppelin/contracts/security/Pausable.sol": {
       "lastModificationDate": 1756563072364,
-      "contentHash": "5a20b2cad87ddb61c7a3a6af21289e28",
-      "sourceName": "@openzeppelin/contracts/access/Ownable.sol",
+      "contentHash": "25c8108f36fdd472bc78d4c4af240c11",
+      "sourceName": "@openzeppelin/contracts/security/Pausable.sol",
       "solcConfig": {
         "version": "0.8.24",
         "settings": {
@@ -276,7 +276,7 @@
         "^0.8.0"
       ],
       "artifacts": [
-        "Ownable"
+        "Pausable"
       ]
     },
     "/Users/swetakarar/Desktop/code/BitMax-Staking-App/BitMax-Stake-App/node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol": {
@@ -356,7 +356,7 @@
       ]
     },
     "/Users/swetakarar/Desktop/code/BitMax-Staking-App/BitMax-Stake-App/contracts/tokens/StandardizedTokenWrapper.sol": {
-      "lastModificationDate": 1756563162284,
+      "lastModificationDate": 1756563496577,
       "contentHash": "828858a3de3682c6d965d4a0304a4db1",
       "sourceName": "contracts/tokens/StandardizedTokenWrapper.sol",
       "solcConfig": {
@@ -399,7 +399,7 @@
       ]
     },
     "/Users/swetakarar/Desktop/code/BitMax-Staking-App/BitMax-Stake-App/contracts/tokens/PTToken.sol": {
-      "lastModificationDate": 1756563167668,
+      "lastModificationDate": 1756563496576,
       "contentHash": "2c581d39f1ff7f341ce931978ee083a1",
       "sourceName": "contracts/tokens/PTToken.sol",
       "solcConfig": {
@@ -438,7 +438,7 @@
       ]
     },
     "/Users/swetakarar/Desktop/code/BitMax-Staking-App/BitMax-Stake-App/contracts/tokens/YTToken.sol": {
-      "lastModificationDate": 1756563172799,
+      "lastModificationDate": 1756563496576,
       "contentHash": "febd8f21223957dd2158b7f1316e8c1e",
       "sourceName": "contracts/tokens/YTToken.sol",
       "solcConfig": {
@@ -740,46 +740,6 @@
         "Counters"
       ]
     },
-    "/Users/swetakarar/Desktop/code/BitMax-Staking-App/BitMax-Stake-App/node_modules/@openzeppelin/contracts/utils/cryptography/EIP712.sol": {
-      "lastModificationDate": 1756563072348,
-      "contentHash": "459aeb9cc3fc3c6d67d30ffefb724aba",
-      "sourceName": "@openzeppelin/contracts/utils/cryptography/EIP712.sol",
-      "solcConfig": {
-        "version": "0.8.24",
-        "settings": {
-          "evmVersion": "paris",
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "./ECDSA.sol",
-        "../ShortStrings.sol",
-        "../../interfaces/IERC5267.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.8"
-      ],
-      "artifacts": [
-        "EIP712"
-      ]
-    },
     "/Users/swetakarar/Desktop/code/BitMax-Staking-App/BitMax-Stake-App/node_modules/@openzeppelin/contracts/utils/cryptography/ECDSA.sol": {
       "lastModificationDate": 1756563072348,
       "contentHash": "d822a8a9468649cab463f29f5decf5cc",
@@ -818,10 +778,10 @@
         "ECDSA"
       ]
     },
-    "/Users/swetakarar/Desktop/code/BitMax-Staking-App/BitMax-Stake-App/node_modules/@openzeppelin/contracts/utils/ShortStrings.sol": {
-      "lastModificationDate": 1756563072365,
-      "contentHash": "8dde288da49722a70f34ee369be4bfba",
-      "sourceName": "@openzeppelin/contracts/utils/ShortStrings.sol",
+    "/Users/swetakarar/Desktop/code/BitMax-Staking-App/BitMax-Stake-App/node_modules/@openzeppelin/contracts/utils/cryptography/EIP712.sol": {
+      "lastModificationDate": 1756563072348,
+      "contentHash": "459aeb9cc3fc3c6d67d30ffefb724aba",
+      "sourceName": "@openzeppelin/contracts/utils/cryptography/EIP712.sol",
       "solcConfig": {
         "version": "0.8.24",
         "settings": {
@@ -847,49 +807,15 @@
         }
       },
       "imports": [
-        "./StorageSlot.sol"
+        "./ECDSA.sol",
+        "../ShortStrings.sol",
+        "../../interfaces/IERC5267.sol"
       ],
       "versionPragmas": [
         "^0.8.8"
       ],
       "artifacts": [
-        "ShortStrings"
-      ]
-    },
-    "/Users/swetakarar/Desktop/code/BitMax-Staking-App/BitMax-Stake-App/node_modules/@openzeppelin/contracts/interfaces/IERC5267.sol": {
-      "lastModificationDate": 1756563072361,
-      "contentHash": "b1756048024350a162c3be27c04aa652",
-      "sourceName": "@openzeppelin/contracts/interfaces/IERC5267.sol",
-      "solcConfig": {
-        "version": "0.8.24",
-        "settings": {
-          "evmVersion": "paris",
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [],
-      "versionPragmas": [
-        "^0.8.0"
-      ],
-      "artifacts": [
-        "IERC5267"
+        "EIP712"
       ]
     },
     "/Users/swetakarar/Desktop/code/BitMax-Staking-App/BitMax-Stake-App/node_modules/@openzeppelin/contracts/utils/Strings.sol": {
@@ -1003,6 +929,80 @@
         "Math"
       ]
     },
+    "/Users/swetakarar/Desktop/code/BitMax-Staking-App/BitMax-Stake-App/node_modules/@openzeppelin/contracts/utils/ShortStrings.sol": {
+      "lastModificationDate": 1756563072365,
+      "contentHash": "8dde288da49722a70f34ee369be4bfba",
+      "sourceName": "@openzeppelin/contracts/utils/ShortStrings.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./StorageSlot.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.8"
+      ],
+      "artifacts": [
+        "ShortStrings"
+      ]
+    },
+    "/Users/swetakarar/Desktop/code/BitMax-Staking-App/BitMax-Stake-App/node_modules/@openzeppelin/contracts/interfaces/IERC5267.sol": {
+      "lastModificationDate": 1756563072361,
+      "contentHash": "b1756048024350a162c3be27c04aa652",
+      "sourceName": "@openzeppelin/contracts/interfaces/IERC5267.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "IERC5267"
+      ]
+    },
     "/Users/swetakarar/Desktop/code/BitMax-Staking-App/BitMax-Stake-App/node_modules/@openzeppelin/contracts/utils/StorageSlot.sol": {
       "lastModificationDate": 1756563072366,
       "contentHash": "682f7dd1f2e1147c8390e7575deceb2d",
@@ -1040,7 +1040,7 @@
       ]
     },
     "/Users/swetakarar/Desktop/code/BitMax-Staking-App/BitMax-Stake-App/contracts/oracles/ProductionPriceOracle.sol": {
-      "lastModificationDate": 1756563324044,
+      "lastModificationDate": 1756567464931,
       "contentHash": "673eefd14ae75d86b09b4839228bf19d",
       "sourceName": "contracts/oracles/ProductionPriceOracle.sol",
       "solcConfig": {
@@ -1080,91 +1080,8 @@
         "ProductionPriceOracle"
       ]
     },
-    "/Users/swetakarar/Desktop/code/BitMax-Staking-App/BitMax-Stake-App/contracts/tokens/ProductionERC20.sol": {
-      "lastModificationDate": 1756563361018,
-      "contentHash": "9bbd624fc7a9ea98edf87229a037fd15",
-      "sourceName": "contracts/tokens/ProductionERC20.sol",
-      "solcConfig": {
-        "version": "0.8.24",
-        "settings": {
-          "evmVersion": "paris",
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "@openzeppelin/contracts/token/ERC20/ERC20.sol",
-        "@openzeppelin/contracts/token/ERC20/IERC20.sol",
-        "@openzeppelin/contracts/access/Ownable.sol",
-        "@openzeppelin/contracts/security/Pausable.sol",
-        "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "ProductionERC20"
-      ]
-    },
-    "/Users/swetakarar/Desktop/code/BitMax-Staking-App/BitMax-Stake-App/contracts/tokens/ConfigurableERC20.sol": {
-      "lastModificationDate": 1756563354763,
-      "contentHash": "825c67804f2cac1620a784b197e7ef03",
-      "sourceName": "contracts/tokens/ConfigurableERC20.sol",
-      "solcConfig": {
-        "version": "0.8.24",
-        "settings": {
-          "evmVersion": "paris",
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "@openzeppelin/contracts/token/ERC20/ERC20.sol",
-        "@openzeppelin/contracts/access/Ownable.sol",
-        "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol",
-        "@openzeppelin/contracts/security/Pausable.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "ConfigurableERC20"
-      ]
-    },
     "/Users/swetakarar/Desktop/code/BitMax-Staking-App/BitMax-Stake-App/contracts/infrastructure/StakingDapp.sol": {
-      "lastModificationDate": 1756563331199,
+      "lastModificationDate": 1756563496576,
       "contentHash": "31337c7896eb6b3a7d7d456b7b766034",
       "sourceName": "contracts/infrastructure/StakingDapp.sol",
       "solcConfig": {
@@ -1206,8 +1123,91 @@
         "StakingDapp"
       ]
     },
+    "/Users/swetakarar/Desktop/code/BitMax-Staking-App/BitMax-Stake-App/contracts/tokens/ProductionERC20.sol": {
+      "lastModificationDate": 1756563496576,
+      "contentHash": "9bbd624fc7a9ea98edf87229a037fd15",
+      "sourceName": "contracts/tokens/ProductionERC20.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/token/ERC20/ERC20.sol",
+        "@openzeppelin/contracts/token/ERC20/IERC20.sol",
+        "@openzeppelin/contracts/access/Ownable.sol",
+        "@openzeppelin/contracts/security/Pausable.sol",
+        "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "ProductionERC20"
+      ]
+    },
+    "/Users/swetakarar/Desktop/code/BitMax-Staking-App/BitMax-Stake-App/contracts/tokens/ConfigurableERC20.sol": {
+      "lastModificationDate": 1756563496576,
+      "contentHash": "825c67804f2cac1620a784b197e7ef03",
+      "sourceName": "contracts/tokens/ConfigurableERC20.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/token/ERC20/ERC20.sol",
+        "@openzeppelin/contracts/access/Ownable.sol",
+        "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol",
+        "@openzeppelin/contracts/security/Pausable.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "ConfigurableERC20"
+      ]
+    },
     "/Users/swetakarar/Desktop/code/BitMax-Staking-App/BitMax-Stake-App/contracts/mocks/mockUsdc.sol": {
-      "lastModificationDate": 1756563349434,
+      "lastModificationDate": 1756563496576,
       "contentHash": "a741c06a4dbaf088eec086a7e542b8eb",
       "sourceName": "contracts/mocks/mockUsdc.sol",
       "solcConfig": {
@@ -1246,7 +1246,7 @@
       ]
     },
     "/Users/swetakarar/Desktop/code/BitMax-Staking-App/BitMax-Stake-App/contracts/mocks/MockPriceOracle.sol": {
-      "lastModificationDate": 1756563342882,
+      "lastModificationDate": 1756563496576,
       "contentHash": "122ed1c7197491f4d81d714ebd31061e",
       "sourceName": "contracts/mocks/MockPriceOracle.sol",
       "solcConfig": {
@@ -1284,7 +1284,7 @@
       ]
     },
     "/Users/swetakarar/Desktop/code/BitMax-Staking-App/BitMax-Stake-App/contracts/mocks/MockERC20.sol": {
-      "lastModificationDate": 1756563337396,
+      "lastModificationDate": 1756563496576,
       "contentHash": "94b1f5d2dcbfd6d6feb10661f04539ad",
       "sourceName": "contracts/mocks/MockERC20.sol",
       "solcConfig": {
