@@ -55,7 +55,7 @@ contract SimpleAMM is Ownable, Pausable, ReentrancyGuard {
     /// @notice Initializes the AMM with token pair
     /// @param _tokenA Address of token A
     /// @param _tokenB Address of token B
-    constructor(address _tokenA, address _tokenB) Ownable(msg.sender) {
+    constructor(address _tokenA, address _tokenB) Ownable() {
         require(_tokenA != address(0) && _tokenB != address(0), "Invalid token address");
         require(_tokenA != _tokenB, "Identical tokens");
         tokenA = IERC20(_tokenA);

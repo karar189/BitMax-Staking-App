@@ -1,10 +1,17 @@
 {
   "name": "staking-dapp",
   "version": "1.0.0",
-  "description": "## What are we building Welcome to this tutorial on building a simple staking dApp on the Core blockchain. In this guide, we'll walk through the process of creating a basic staking dApp that allows users to stake, unstake, and claim rewards. By the end of this tutorial, you'll have a functional dApp that interacts with smart contracts on the Core Testnet.  In this staking dapp, 2 custom ERC20 tokens are used namely, `Staking Token - STK` and `Reward Token - RTK`. While, `STK` is used for staking, the `RTK` token is used for rewarding the users for staking their `STK` tokens.",
+  "description": "## What are we building Welcome to this tutorial on building a simple staking dApp on the Core blockchain. In this guide, we'll walk through the process of creating a basic staking dApp that allows users to stake, unstake, and claim rewards. By the end of this tutorial, you'll have a functional dApp that interacts with smart contracts on the Core Testnet.  In this staking dapp, 2 custom ERC20 tokens are used namely, `Staking Token - STK` and `Reward Token - RTK`. While, `STK` is used for staking, `RTK` token is used for rewarding the users for staking their `STK` tokens.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy:avalanche": "hardhat run scripts/deploy-avalanche.js --network avalanche_fuji",
+    "deploy:core": "hardhat run scripts/deploy.js --network core_testnet",
+    "compile": "hardhat compile",
+    "verify:avalanche": "hardhat verify --network avalanche_fuji",
+    "test:avalanche": "hardhat run scripts/test-deployment.js --network avalanche_fuji",
+    "continue:avalanche": "hardhat run scripts/continue-deployment.js --network avalanche_fuji",
+    "check:oracle": "hardhat run scripts/check-oracle-status.js --network avalanche_fuji"
   },
   "keywords": [],
   "author": "",
@@ -20,7 +27,8 @@
     "ethers": "^5.8.0"
   },
   "devDependencies": {
-    "@openzeppelin/contracts": "^5.2.0",
+    "@nomicfoundation/hardhat-verify": "^2.1.1",
+    "@openzeppelin/contracts": "^4.9.6",
     "hardhat": "^2.22.19"
   }
 }

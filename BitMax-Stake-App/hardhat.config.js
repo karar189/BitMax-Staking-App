@@ -4,11 +4,12 @@
 
 require('@nomiclabs/hardhat-ethers');
 require("@nomiclabs/hardhat-waffle");
+require("@nomicfoundation/hardhat-verify");
 
 const { PrivateKey } = require('./secret.json');
 
 module.exports = {
-   defaultNetwork: 'core_testnet',
+   defaultNetwork: 'avalanche_fuji',
 
    networks: {
       hardhat: {
@@ -17,6 +18,12 @@ module.exports = {
          url: 'https://rpc.test2.btcs.network',
          accounts: [PrivateKey],
          chainId: 1114,
+      },
+      avalanche_fuji: {
+         url: 'https://api.avax-test.network/ext/bc/C/rpc',
+         accounts: [PrivateKey],
+         chainId: 43113,
+         gasPrice: 25000000000, // 25 gwei
       }
    },
    solidity: {
@@ -41,4 +48,9 @@ module.exports = {
    mocha: {
       timeout: 20000,
    },
+   etherscan: {
+      apiKey: {
+         avalancheFujiTestnet: 'YOUR_AVALANCHE_API_KEY' // Optional for verification
+      }
+   }
 };

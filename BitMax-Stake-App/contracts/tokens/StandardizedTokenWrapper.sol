@@ -49,7 +49,7 @@ contract StandardizedTokenWrapper is ERC20, Ownable, Pausable, ReentrancyGuard {
         string memory _name,
         string memory _symbol,
         uint256 _yieldRateBps
-    ) ERC20(_name, _symbol) Ownable(msg.sender) {
+    ) ERC20(_name, _symbol) Ownable() {
         require(_yieldRateBps <= 10000, "Rate exceeds 100%");
         yieldRateBps = _yieldRateBps;
     }

@@ -66,7 +66,7 @@ contract GenericYieldTokenization is Ownable, Pausable, ReentrancyGuard {
     /// @param _baseName The base name for PT and YT tokens
     /// @param _baseSymbol The base symbol for PT and YT tokens
     constructor(address _syToken, string memory _baseName, string memory _baseSymbol) 
-        Ownable(msg.sender) 
+        Ownable() 
     {
         require(_syToken != address(0), "Invalid SY token");
         syToken = StandardizedTokenWrapper(_syToken);

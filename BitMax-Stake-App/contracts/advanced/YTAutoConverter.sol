@@ -75,7 +75,7 @@ contract YTAutoConverter is Ownable, Pausable, ReentrancyGuard {
         address _tokenization,
         address _referenceToken,
         address _amm
-    ) Ownable(msg.sender) {
+    ) Ownable() {
         require(_oracle != address(0), "Invalid oracle address");
         require(_tokenization != address(0), "Invalid tokenization address");
         require(_referenceToken != address(0), "Invalid reference token address");
@@ -98,10 +98,8 @@ contract YTAutoConverter is Ownable, Pausable, ReentrancyGuard {
 
         emit UserConfigUpdated(msg.sender, _enabled, _thresholdPrice);
 
-        // Set oracle threshold if enabled
-        if (_enabled) {
-            oracle.setThreshold(address(referenceToken), _thresholdPrice);
-        }
+        // Note: Oracle threshold should be set separately through the oracle contract
+        // This is just a configuration flag for the auto-converter
     }
 
     /**

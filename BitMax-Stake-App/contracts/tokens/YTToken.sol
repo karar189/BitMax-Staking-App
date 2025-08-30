@@ -29,7 +29,7 @@ contract YTToken is ERC20, Ownable {
     /// @dev Sets the maturity timestamp and initializes ERC20 and Ownable
     constructor(string memory name, string memory symbol, uint256 _maturity)
         ERC20(name, symbol)
-        Ownable(msg.sender)
+        Ownable()
     {
         require(_maturity > block.timestamp, "Maturity must be in future");
         maturity = _maturity;

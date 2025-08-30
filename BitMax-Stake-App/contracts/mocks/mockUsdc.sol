@@ -15,7 +15,7 @@ contract MockUSDC is ERC20, Ownable {
     event TokensMinted(address indexed to, uint256 amount);
 
     /// @notice Initialize MockUSDC
-    constructor() ERC20("Mock USD Coin", "USDC") Ownable(msg.sender) {}
+    constructor() ERC20("Mock USD Coin", "USDC") Ownable() {}
 
     /// @notice Override decimals to match real USDC
     function decimals() public pure override returns (uint8) {
