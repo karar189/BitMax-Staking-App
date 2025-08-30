@@ -10,6 +10,7 @@
     "compile": "hardhat compile",
     "verify:avalanche": "hardhat verify --network avalanche_fuji",
     "test:avalanche": "hardhat run scripts/test-deployment.js --network avalanche_fuji",
+    "export:abis": "node scripts/export-abis.js",
     "continue:avalanche": "hardhat run scripts/continue-deployment.js --network avalanche_fuji",
     "check:oracle": "hardhat run scripts/check-oracle-status.js --network avalanche_fuji"
   },
