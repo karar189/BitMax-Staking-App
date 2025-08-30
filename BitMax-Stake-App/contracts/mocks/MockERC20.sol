@@ -13,7 +13,7 @@ contract MockERC20 is ERC20, Ownable {
         string memory _name,
         string memory _symbol,
         uint256 _yieldRateBps
-    ) ERC20(_name, _symbol) Ownable(msg.sender) {
+    ) ERC20(_name, _symbol) Ownable() {
         yieldRateBps = _yieldRateBps;
     }
 

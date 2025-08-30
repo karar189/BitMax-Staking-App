@@ -25,7 +25,7 @@ contract MockPriceOracle is Ownable {
     mapping(address => uint256) public thresholds;
     mapping(address => bool) public thresholdReached;
     
-    constructor() Ownable(msg.sender) {}
+    constructor() Ownable() {}
     
     /**
      * @dev Updates price data for a token

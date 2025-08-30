@@ -40,7 +40,7 @@ contract ConfigurableERC20 is ERC20, ERC20Permit, Ownable, Pausable {
     )
         ERC20(_name, _symbol)
         ERC20Permit(_name)
-        Ownable(msg.sender)
+        Ownable()
     {
         mintLimit = _mintLimit;
         supplyCap = _supplyCap;

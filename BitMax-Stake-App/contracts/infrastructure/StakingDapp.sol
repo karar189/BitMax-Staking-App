@@ -72,7 +72,7 @@ contract StakingDapp is Ownable, Pausable, ReentrancyGuard {
     /// @notice Initializes the staking contract
     /// @param _stakingToken Address of the token to be staked
     /// @param _rewardToken Address of the reward token
-    constructor(address _stakingToken, address _rewardToken) Ownable(msg.sender) {
+    constructor(address _stakingToken, address _rewardToken) Ownable() {
         require(_stakingToken != address(0) && _rewardToken != address(0), "Invalid token addresses");
         require(_stakingToken != _rewardToken, "Tokens must be different");
         stakingToken = IERC20(_stakingToken);

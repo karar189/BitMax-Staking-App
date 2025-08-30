@@ -74,7 +74,7 @@ contract ProductionPriceOracle is IPriceOracle, Ownable, Pausable, ReentrancyGua
     event CircuitBreakerReset(address indexed resetter);
 
     /// @notice Initialize the oracle
-    constructor() Ownable(msg.sender) {
+    constructor() Ownable() {
         // Owner is automatically a price updater
         priceUpdaters[msg.sender] = true;
         emit PriceUpdaterAdded(msg.sender);
@@ -146,7 +146,7 @@ contract ProductionPriceOracle is IPriceOracle, Ownable, Pausable, ReentrancyGua
     /// @notice Set price threshold for a token
     /// @param token Token address
     /// @param threshold Threshold price (scaled by 10^8)
-    function setThreshold(address token, uint256 threshold) external override {
+    function setThreshold(address token, uint256 threshold) external {
         require(token != address(0), "Invalid token address");
         require(threshold > 0, "Threshold must be greater than 0");
         
@@ -168,7 +168,7 @@ contract ProductionPriceOracle is IPriceOracle, Ownable, Pausable, ReentrancyGua
     /// @notice Get current price for a token
     /// @param token Token address
     /// @return Current price (scaled by 10^8)
-    function getPrice(address token) external view override returns (uint256) {
+    function getPrice(address token) external view returns (uint256) {
         PriceData memory priceData = prices[token];
         require(priceData.price > 0, "No price available");
         require(
@@ -181,7 +181,7 @@ contract ProductionPriceOracle is IPriceOracle, Ownable, Pausable, ReentrancyGua
     /// @notice Check if threshold has been reached
     /// @param token Token address
     /// @return Whether threshold has been reached
-    function thresholdReached(address token) external view override returns (bool) {
+    function thresholdReached(address token) external view returns (bool) {
         ThresholdData memory thresholdData = thresholds[token];
         if (!thresholdData.isActive) return false;
 
@@ -199,7 +199,7 @@ contract ProductionPriceOracle is IPriceOracle, Ownable, Pausable, ReentrancyGua
     /// @notice Get threshold for a token
     /// @param token Token address
     /// @return Current threshold (scaled by 10^8)
-    function getThreshold(address token) external view override returns (uint256) {
+    function getThreshold(address token) external view returns (uint256) {
         return thresholds[token].threshold;
     }
 
@@ -258,5 +258,62 @@ contract ProductionPriceOracle is IPriceOracle, Ownable, Pausable, ReentrancyGua
         priceData.updater = msg.sender;
 
         emit PriceUpdated(token, oldPrice, emergencyPrice, 5000, msg.sender);
+    }
+
+    // IPriceOracle interface implementations
+    
+    /// @notice Get the latest price for a given token
+    /// @param token The token address to get price for
+    /// @return price The latest price in USD (8 decimals)
+    /// @return timestamp The timestamp when the price was last updated
+    function getLatestPrice(address token) external view returns (uint256 price, uint256 timestamp) {
+        PriceData memory priceData = prices[token];
+        require(priceData.price > 0, "No price available");
+        return (priceData.price, priceData.timestamp);
+    }
+    
+    /// @notice Check if a price is within acceptable thresholds
+    /// @param token The token address to check
+    /// @param threshold The threshold percentage in basis points (e.g., 5000 = 50%)
+    /// @return isWithinThreshold Whether the price is within the threshold
+    function isPriceWithinThreshold(address token, uint256 threshold) external view returns (bool isWithinThreshold) {
+        PriceData memory priceData = prices[token];
+        if (priceData.price == 0) return false;
+        
+        uint256 currentPrice = priceData.price;
+        uint256 basePrice = thresholds[token].threshold;
+        if (basePrice == 0) return true; // No threshold set
+        
+        uint256 upperBound = basePrice + (basePrice * threshold / 10000);
+        uint256 lowerBound = basePrice - (basePrice * threshold / 10000);
+        
+        return currentPrice >= lowerBound && currentPrice <= upperBound;
+    }
+    
+    /// @notice Get the price change percentage over a time period
+    /// @param token The token address to check
+    /// @param timePeriod The time period in seconds
+    /// @return priceChange The price change percentage in basis points
+    function getPriceChange(address token, uint256 timePeriod) external view returns (int256 priceChange) {
+        PriceData memory priceData = prices[token];
+        if (priceData.price == 0) return 0;
+        
+        // For demo purposes, return a simulated price change
+        // In production, this would query historical price data
+        return 0; // No change for demo
+    }
+    
+
+    
+    /// @notice Check if the oracle is healthy and providing valid data
+    /// @return isHealthy Whether the oracle is healthy
+    function isHealthy() external view returns (bool isHealthy) {
+        return !circuitBreakerActive && !paused();
+    }
+    
+    /// @notice Get the heartbeat timeout for price updates
+    /// @return heartbeat The heartbeat timeout in seconds
+    function getHeartbeat() external view returns (uint256 heartbeat) {
+        return STALENESS_THRESHOLD;
     }
 }
